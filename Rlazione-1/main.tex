@@ -1,0 +1,31 @@
+\documentclass[a4paper,12pt]{article}
+
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage[italian]{babel}
+\usepackage[margin=2.5cm]{geometry}
+\usepackage{graphicx}
+\usepackage{csquotes}
+\usepackage[backend=biber,style=numeric,sorting=none]{biblatex}
+\addbibresource{references.bib}
+\usepackage[hidelinks]{hyperref}
+
+\graphicspath{{images/}}
+
+\title{Relazione 1: titolo da inserire}
+\author{Nome e cognome}
+\date{\today}
+
+\begin{document}
+
+\maketitle
+\tableofcontents
+\newpage
+
+\input{chapters/01_introduzione}
+\input{chapters/02_primo_punto}
+\input{chapters/03_secondo_punto}
+\input{chapters/04_conclusioni}
+\input{chapters/05_bibliografia}
+
+\end{document}

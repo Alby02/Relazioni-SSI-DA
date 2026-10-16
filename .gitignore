@@ -1,0 +1,52 @@
+# File temporanei e ausiliari di compilazione LaTeX
+*.aux
+*.log
+*.out
+*.toc
+*.lof
+*.lot
+*.fls
+*.fdb_latexmk
+*.synctex
+*.synctex.gz
+*.synctex(busy)
+*.dvi
+*.xdv
+
+# Bibliografia generata da BibTeX / Biber
+*.bbl
+*.blg
+*.bcf
+*.run.xml
+
+# Altri file ausiliari LaTeX
+*.nav
+*.snm
+*.vrb
+*.loa
+*.lol
+*.idx
+*.ind
+*.ilg
+*.glo
+*.gls
+*.glg
+*.acn
+*.acr
+*.alg
+*.ist
+*.glsdefs
+*.loe
+*.thm
+*.ltjruby
+*.spl
+*.brf
+
+# PDF compilati delle relazioni (i PDF usati come immagini restano inclusi)
+/Rlazione-*/main.pdf
+/relazione-*/main.pdf
+
+# File del sistema operativo
+.DS_Store
+Thumbs.db
+Desktop.ini
