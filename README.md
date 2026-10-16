@@ -2,7 +2,7 @@
 
 Questo repository raccoglie le **quattro relazioni** per ottenere punti extra tramite la didattica attiva del corso di **Sicurezza dei Sistemi Informatici**.
 
-Per scrivere e compilare i file `.tex` in Visual Studio Code si intende usare l'estensione **LaTeX Workshop**.
+Per scrivere e compilare i file `.tex` in Visual Studio Code si intende usare l'estensione **LaTeX Workshop**. (L'estensione richiede un compilatore latex es. MikTex, a sua volta lui richede che installiate Perl)
 
 ## Struttura di ogni relazione
 
