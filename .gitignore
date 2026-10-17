@@ -43,10 +43,16 @@
 *.brf
 
 # PDF compilati delle relazioni (i PDF usati come immagini restano inclusi)
-/Rlazione-*/main.pdf
-/relazione-*/main.pdf
+
 
 # File del sistema operativo
 .DS_Store
 Thumbs.db
 Desktop.ini
+
+# Cartelle di compilazione LaTeX
+# Ignora tutti i file generati
+out/*
+
+# Consenti il caricamento dei PDF finali
+!out/*.pdf
