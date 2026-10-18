@@ -1,39 +1,48 @@
 \section{Primo punto: Phishing e AUR}
 \label{sec:primo-punto}
-La compromissione dell'account è iniziata con un'e-mail di phishing proveniente dall'indirizzo support@npmjs.help, associato ad un dominio registrato appena tre giorni prima dell'attacco e ad un server localizzato nei Paesi Bassi.
+\subsection{Il phishing e la compromissione dell'account}
+La compromissione dell'account è iniziata con un'e-mail di phishing proveniente dall'indirizzo support@npmjs.help, associato a un dominio registrato appena tre giorni prima dell'attacco e un server localizzato nei Paesi Bassi.
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.85\textwidth, height=0.4\textheight]{mail_phishing.png}
+    \includegraphics[width=0.55\textwidth, height=0.2\textheight]{mail_phishing.png}
     \caption{Mail di phishing ricevuta dall'utente.}
-    {\footnotesize Fonte: \cite{https://www.aikido.dev/blog/npm-debug-and-chalk-packages-compromised?}\par}
+    {\footnotesize Fonte: \cite{aikido2025}\par}
     \label{fig:phishing}
 \end{figure}
-\subsection{Il phishing e la compromissione dell'account}
-Dal testo della mail si può notare subito un dettaglio importante: entro 2 giorni l'account verrà sospeso se non si effettua il login, un chiaro tentativo di creare urgenza e pressione psicologica sull'utente.
-Qualche ora dopo, più precisamente alle 13:16 UTC, i sistemi di Aikido, un'azienda specializzata in cybersecurity, hanno notato che l'account di josh stava pubblicando pacchetti con codice apparentemente malevolo, permettendo in seguito di capire che era stato compromesso. 
-Poche ore dopo l'inserimento delle proprie credenziali dal link della mail, lo stesso utente ha dichiarato di aver perso l'accesso al proprio account a seguito dell'attacco di phishing. 
-L'e-mail particolarmente credibile e l'aver passato una settimana stressante avevano ridotto la sua attenzione, esponendolo così agli attacchi.
-Inoltre, Josh ha dichiarato di aver cliccato direttamente sul link presente nell'e-mail perchè stava utilizzando lo smartphone, anziché accedere direttamente al sito ufficiale di npm come era solito fare. 
-Tutti i pacchetti compromessi contenevano codice javascript che intercettava richieste e risposte di rete e interazioni con i wallet. 
-Quando veniva trovato un indirizzo di un wallet, il codice lo sostituiva con un indirizzo controllato dall'attaccante per poter reindirizzare i fondi verso il proprio wallet. 
-Per rendere più difficile la comprensione del codice malevolo, l'attaccante ha utilizzato tecniche di offuscamento del codice come l'uso di variabili con codici come per esempio la variabile 0x112fa8.
+
+Il messaggio minacciava la sospensione dell'account se entro due giorni non fosse stato effettuato il login, un chiaro tentativo di creare urgenza e pressione psicologica sull'utente.
+Qualche ora dopo, più precisamente alle 13:16 UTC, i sistemi di Aikido, un'azienda specializzata in cybersecurity, hanno notato che l'account di Josh stava pubblicando pacchetti con codice apparentemente malevolo, permettendo in seguito di capire che era stato compromesso. 
+
+Josh ha dichiarato che, a causa di una settimana stressante e della credibilità dell'e-mail, aveva cliccato sul link mentre utilizzava lo smartphone, anziché accedere direttamente al sito ufficiale di npm come era solito fare. Dopo aver inserito le proprie credenziali, il suo account è stato compromesso impossibilitandone l'accesso.
+Tutti i pacchetti compromessi contenevano codice JavaScript che intercettava richieste e risposte di rete e interazioni con i wallet. 
+Quando veniva trovato un indirizzo di un wallet, il codice lo sostituiva con un indirizzo controllato dall'attaccante per poter reindirizzare i fondi verso il proprio. 
+Per complicare la comprensione del codice malevolo, l'attaccante ha utilizzato tecniche di offuscamento del codice come l'uso di variabili con codici, come per esempio la variabile 0x112fa8.
+\cite{aikido2025}
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.85\textwidth, height=0.4\textheight]{codice_malevolo.png}
+    \includegraphics[width=0.55\textwidth, height=0.2\textheight]{codice_malevolo.png}
     \caption{estratto del codice malevolo presente nei pacchetti compromessi}
-    {\footnotesize Fonte: \cite{https://www.aikido.dev/blog/npm-debug-and-chalk-packages-compromised?}\par}
+    {\footnotesize Fonte: \cite{aikido2025}\par}
     \label{fig:codice-malevolo}
 \end{figure}
 Per portare a termine l'attacco non era necessario compromettere l'intero registro npm, è stato infatti sufficiente compromettere l'account di un publisher e
  sfruttarne i permessi per distribuire versioni malevole dei pacchetti per raggiungere l'obiettivo desiderato.
 
 \subsection{Dalla pubblicazione malevola all'esecuzione nel browser}
-A seguito dell'attacco di phishing e della compromissione dell'account, l'attaccante ha pubblicato diverse versioni malevole dei pacchetti gestiti dal manutentore. Tra queste era presente debug@4.4.2 che aveva le stesse caratteristiche della versione originale ma contenente il codice malevolo.
+L'attaccante, a questo punto, ha pubblicato diverse versioni malevole dei pacchetti gestiti dal manutentore. Tra queste era presente debug@4.4.2 che manteneva le stesse funzionalità della versione originale ma contenente il codice malevolo.
 L'attacco aveva un'ampia superficie di esposizione: secondo Aikido, i 18 pacchetti inizialmente compromessi avevano oltre 2 miliardi di download settimanali.
 Il codice poteva raggiungere le applicazioni attraverso le dipendenze delle librerie. Infatti, quando uno sviluppatore installava o aggiornava un pacchetto nel suo progetto, poteva anche scaricare una versione compromessa come debug@4.4.2 sia direttamente che come dipendenza di un'altra libreria.
 Durante la fase di build, eseguita localmente oppure attraverso processi automatizzati di integrazione e distribuzione continua (CI/CD) come per esempio il build automatico a seguito di un push, il codice malevolo poteva essere incorporato nel bundle, ovvero l'insieme di file contenenti il codice e le dipendenze necessarie all'applicazione. 
 Una volta distribuita l'applicazione, il codice poteva essere eseguito nei browser degli utenti finali, interferendo con eventuali operazioni relative ai wallet di criptovalute.
-Secondo l'advisory ufficiale di debug presente su github, il comportamento malevolo documentato riguardava esclusivamente gli ambienti browser, mentre le applicazioni eseguite su server o da riga di comando (CLI) non erano interessate da questo specifico attacco.
-
+Secondo l'advisory ufficiale di debug presente su GitHub, il comportamento malevolo documentato riguardava esclusivamente gli ambienti browser, mentre le applicazioni eseguite su server o da riga di comando (CLI) non erano interessate da questo specifico attacco.
+\cite{aikido2025}
+\cite{wiz2025}
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.95\textwidth]{debug_github.png}
+    \caption{Chiarimento sugli ambienti interessati dall'attacco}
+    {\footnotesize Fonte: \cite{debug2025}\par}
+    \label{fig:messaggio-github}
+\end{figure}
 % Inserire spiegazioni, esempi ed eventuali riferimenti con \cite{chiave}.
