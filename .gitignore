@@ -43,8 +43,7 @@
 *.brf
 
 # PDF compilati delle relazioni (i PDF usati come immagini restano inclusi)
-Rlazione-1/main.pdf
-Rlazione-1/out/main.pdf
+*.pdf
 
 
 # File del sistema operativo
