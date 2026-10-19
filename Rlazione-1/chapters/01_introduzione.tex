@@ -1,6 +1,87 @@
 \section{Introduzione}
 \label{sec:introduzione}
+\subsection{Rilevanza del problema e obiettivo}
+\subsubsection{Perché fidarsi di una dipendenza può esporre a un attacco}
 
-% Persona 1 — circa 0,3 pagina.
-% Introdurre il problema della fiducia nelle dipendenze, la domanda guida
-% e il confronto tra il caso npm chalk/debug e il caso AUR.
+Sviluppare un software al giorno d'oggi implica molto spesso 
+lo sfruttamento di componenti realizzati da altri, per utilizzare 
+le loro funzionalità a nostro vantaggio.
+
+Questo modus operandi può introdurre dei problemi di sicurezza informatica, 
+e non solo quando l’autore non è attendibile, ma anche quando 
+ne conosciamo la provenienza, diventando, grazie alla nostra fiducia, 
+un vettore di attacco nel momento in cui chi pubblica questi ausili 
+viene compromesso.
+
+\subsubsection{i casi selezionati}
+
+In questo esposto vengono trattati e analizzati due esempi calzanti:
+\begin{itemize}
+    \item[] l’attacco del settembre del 2025 a npm chalk e debug, in cui vennero 
+pubblicati aggiornamenti malevoli grazie alla compromissione di 
+un account di un manutentore tramite phising [1];
+\item[] l’attacco nel giugno del 2026, i quali hanno sfruttato la fiducia 
+negli script dei pacchetti di installazione nell’Arch User Repository (AUR)[2].
+\end{itemize}
+
+La presente relazione si propone come obbiettivo quello di studiare 
+e confrontare i due episodi elencati in precedenza per mettere 
+in luce come meccanismi differenti possano compromettere l’integrità 
+di un software distribuito, mettendo a rischio gli ambienti.
+La domanda che quindi ci poniamo è: 
+\textbf{in che modo la compromissione di un account 
+di pubblicazione o la modifica di una ricetta di installazione 
+può trasformare una dipendenza legittima in un vettore di attacco?}
+
+\section{Descrizione del tema e del contesto}
+\subsection{Dipendenze e confini di fiducia}
+\subsubsection{Dipendenze dirette e transitive in npm}
+\textbf{Npm} è un gestore dei pacchetti per il linguaggio di programmazione 
+\textbf{JavaScrip} (Js). Un \textbf{pacchetto} non è altro che un componente software. 
+Chi si cura dello sviluppo e della manutenzione dei pacchetti, 
+viene chiamato \textbf{manutentore}, al contrario di chi le sfrutta nel suo 
+programma, che viene denominato \textbf{sviluppatore}. Esso si fida sia dei 
+pacchetti installati direttamente (\textbf{Dipendenza diretta}) con npm, 
+sia di quelli installati dai pacchetti stessi per funzionare 
+(\textbf{Dipendenza transitiva}).
+
+Il manutentore utilizza un \textbf{account di pubblicazione} 
+per rendere disponibili i pacchetti sviluppati, che se compromesso 
+può diventare vettore di attacchi.
+
+\subsubsection{Ricette di build e installazione in AUR}
+Nell’AUR, invece, si trovano delle \textbf{ricette}: ossia delle istruzioni 
+per creare i pacchetti in loco. Il file utilizzato per amministrare e 
+installare le ricette è chiamato \texttt{PKGBUILD}. L’AUR è distinto dai 
+repository ufficiali di Arch Linux, perché non forniscono le stesse 
+garanzie [3].
+
+Si fa notare che la differenza sostanziale fra i due procedimenti 
+sta nel fatto che npm installa la libreria nel progetto, mentre AUR applica 
+una procedura per l’installazione.
+
+\subsection{Soggetti e asset interessati}
+\subsubsection{Chi può essere esposto}
+Durante gli attacchi possono essere esposti diversi attori:
+\begin{itemize}
+    \item[] il manutentore, il cui account può essere compromesso;
+    \item[] lo sviluppatore, che integra con dipendenze dirette 
+    e transitive il suo programma;
+    \item[] l’utente dell’applicazione, cioè chi la utilizza 
+    l’applicazione;
+    \item[] l’utente di sistema, ovvero chi offre il dispositivo 
+    per far funzionare l’applicazione.
+\end{itemize}
+
+\subsubsection{Che cosa occorre proteggere}
+Senza dilungarsi, gli assert, ossia cosa tutelare, sono:
+\begin{itemize}
+    \item[] gli account di pubblicazione;
+    \item[] l’integrità dei pacchetti e delle ricette;
+    \item[] l’ambiente di sviluppo e i dati locali.
+\end{itemize}
+
+Si fa notare che l’effetto di attacchi malevoli e 
+comunque una conseguenza dei privilegi di base assegnati, 
+alle operazioni eseguite durante l’installazione e i dati raggiungibili 
+durante la sua esecuzione.
