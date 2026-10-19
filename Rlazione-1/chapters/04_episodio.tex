@@ -3,8 +3,32 @@
 
 % Persone 2 e 3 — circa 1 pagina complessiva.
 \subsection{chalk/debug, 8 settembre 2025}
-% Persona 2 — circa 0,5 pagina. Cronologia essenziale, componenti coinvolti
-% e risposta documentata. Evitare di ripetere qui il percorso tecnico del cap. 3.
+% Persona 2 — circa 0,5 pagina.
+\subsubsection{Cronologia essenziale e componenti coinvolti}
+
+L'8 settembre 2025 l'account npm del manutentore fu usato per pubblicare
+versioni sospette di pacchetti, tra cui \texttt{chalk@5.6.1} e
+\texttt{debug@4.4.2}. Alle 13:16 UTC Aikido Security segnalò attività anomala
+di pubblicazione; poco dopo il manutentore confermò di aver perso il controllo
+dell'account. Segnalazioni sui repository GitHub di chalk e debug avvertirono
+gli sviluppatori di non usare le versioni coinvolte~\cite{aikido2025,chalk2025}.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.78\textwidth]{immagine_compromesso_chalk.png}
+    \caption{Segnalazione della versione compromessa di chalk su GitHub.}
+    {\footnotesize Fonte: \cite{chalk2025}\par}
+    \label{fig:issue-chalk-compromesso}
+\end{figure}
+
+\subsubsection{Risposta adottata}
+
+Le versioni compromesse furono rimosse da npm. L'advisory di debug raccomandò
+agli utilizzatori di aggiornare alle versioni corrette e, se le versioni
+malevole erano state installate, di rimuovere le dipendenze scaricate e
+ricostruire da zero i bundle browser potenzialmente contaminati
+~\cite{debug2025}. La cronologia qui riassunta descrive la risposta osservata;
+le misure preventive generali sono trattate nel capitolo~\ref{sec:mitigazioni}.
 
 \subsection{AUR, segnalazione del 12 giugno 2026}
 \label{subsec:aur-episodio}

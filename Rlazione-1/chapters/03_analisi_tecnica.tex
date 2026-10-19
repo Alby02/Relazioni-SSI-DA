@@ -4,9 +4,46 @@
 % Persone 2 e 3 — circa 1,6 pagine complessive, figure incluse.
 \subsection{npm: dall'account compromesso alla dipendenza malevola}
 % Persona 2 — circa 0,8 pagina.
-% Spiegare il phishing, l'abuso dell'account publisher e il percorso dalla
-% release malevola alla dipendenza e al bundle browser. Usare debug@4.4.2
-% come esempio circoscritto; distinguere browser da server/CLI.
+\subsubsection{Phishing e abuso dell'autorità di pubblicazione}
+
+La compromissione dell'account npm del manutentore iniziò con un'e-mail di
+phishing inviata dall'indirizzo \texttt{support@npmjs.help}. Il messaggio
+minacciava la sospensione dell'account se il destinatario non avesse effettuato
+il login entro due giorni, creando urgenza. Il manutentore riferì di aver
+seguito il collegamento dal telefono e inserito le credenziali; in seguito perse
+l'accesso all'account. L'episodio mostra come l'attaccante abbia sfruttato
+l'identità legittima del publisher per pubblicare aggiornamenti: non fu
+necessario compromettere l'intero registro npm~\cite{aikido2025}.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.68\textwidth]{mail_phishing.png}
+    \caption{E-mail di phishing inviata al manutentore.}
+    {\footnotesize Fonte: \cite{aikido2025}\par}
+    \label{fig:phishing-npm}
+\end{figure}
+
+\subsubsection{Dalla pubblicazione malevola all'esecuzione nel browser}
+
+Dopo aver ottenuto accesso all'account, l'attaccante pubblicò versioni
+modificate di pacchetti mantenuti dalla vittima. Tra queste, \texttt{debug@4.4.2}
+conservava le funzioni previste ma includeva codice JavaScript malevolo
+~\cite{debug2025}. Il codice poteva raggiungere un'applicazione sia tramite
+una dipendenza dichiarata direttamente, sia attraverso una dipendenza
+transitiva. Se incluso nella build di un'applicazione web, il \emph{bundle}
+(l'insieme di codice e dipendenze distribuito al browser) poteva portare il
+codice fino agli utenti dell'applicazione. L'advisory del progetto specifica
+che il comportamento malevolo riguardava l'ambiente browser; server e strumenti
+da riga di comando non erano esposti a questo specifico comportamento
+~\cite{debug2025,wiz2025}.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.9\textwidth]{Codice_malevolo.png}
+    \caption{Esempio di codice malevolo individuato nelle versioni compromesse.}
+    {\footnotesize Fonte: \cite{aikido2025}\par}
+    \label{fig:codice-malevolo-npm}
+\end{figure}
 
 \subsection{AUR: dalla modifica della ricetta all'esecuzione}
 \label{subsec:aur-tecnica}
