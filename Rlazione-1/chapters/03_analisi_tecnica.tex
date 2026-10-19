@@ -1,0 +1,68 @@
+\section{Analisi tecnica: funzionamento e debolezze sfruttate}
+\label{sec:analisi-tecnica}
+
+% Persone 2 e 3 — circa 1,6 pagine complessive, figure incluse.
+\subsection{npm: dall'account compromesso alla dipendenza malevola}
+% Persona 2 — circa 0,8 pagina.
+% Spiegare il phishing, l'abuso dell'account publisher e il percorso dalla
+% release malevola alla dipendenza e al bundle browser. Usare debug@4.4.2
+% come esempio circoscritto; distinguere browser da server/CLI.
+
+\subsection{AUR: dalla modifica della ricetta all'esecuzione}
+\label{subsec:aur-tecnica}
+% Persona 3 — circa 0,8 pagina.
+\subsubsection{Abuso della manutenzione della ricetta}
+Nel caso AUR, la fiducia non riguarda soltanto il programma finale: l'utente
+scarica una ricetta di compilazione e si affida alle istruzioni che questa
+contiene. L'AUR raccoglie ricette \texttt{PKGBUILD} inviate dagli utenti; non è
+un repository binario ufficiale e le ricette non sono sottoposte a una verifica
+completa da parte del progetto Arch~\cite{archwiki-aur}. Per ottenere un
+pacchetto, \texttt{makepkg} interpreta il \texttt{PKGBUILD}, che può scaricare
+file ed eseguire comandi durante la preparazione e la compilazione
+~\cite{archwiki-makepkg}.
+
+Un esempio circoscritto è \texttt{gnome-randr-rust}. L'11 giugno 2026, un
+utente segnalò sulla lista ufficiale \texttt{aur-general} che un nuovo
+manutentore aveva adottato il pacchetto e aggiunto uno script d'installazione
+con il comando \texttt{npm install atomic-lockfile yargs}; il pacchetto non
+aveva una ragione tecnica apparente per introdurre npm. Un manutentore AUR
+confermò la natura malevola della modifica e ripristinò il commit precedente
+~\cite{aur-mail-gnome-randr}. Il passaggio di fiducia abusato era la facoltà
+di adottare e modificare una ricetta rimasta senza manutentore attivo, facendo
+apparire legittime nuove istruzioni di installazione. Si tratta di un abuso
+delle procedure di manutenzione AUR, non della compromissione del registro npm
+né dei repository ufficiali di Arch.
+
+La discussione tecnica sulla lista chiarì inoltre che il pacchetto npm
+richiamato conteneva un hook di ciclo di vita \texttt{preinstall}, che avviava
+un eseguibile Linux incluso nel pacchetto. In questo modo il comando aggiunto
+alla ricetta non si limitava a scaricare una libreria: passava l'esecuzione al
+codice distribuito attraverso il secondo ecosistema di pacchetti
+~\cite{aur-mail-gnome-randr}. Il fatto che un pacchetto AUR introduca npm o un
+altro gestore di pacchetti non prova da solo un attacco, ma quando la nuova
+dipendenza non ha relazione con il software e avvia script durante
+l'installazione costituisce un'anomalia da esaminare.
+
+\subsubsection{Ambiente di esecuzione e privilegi}
+La catena è: adozione del pacchetto $\rightarrow$ modifica della ricetta/script
+\texttt{.install} $\rightarrow$ esecuzione di \texttt{npm install} nel callback
+\texttt{post\_install}. La compilazione con \texttt{makepkg} e l'installazione
+con \texttt{pacman} sono fasi distinte: Arch vieta di eseguire \texttt{makepkg}
+come amministratore, mentre il callback di uno script \texttt{.install} viene
+eseguito durante la transazione di installazione o aggiornamento
+~\cite{archwiki-makepkg,arch-alpm-scriptlet}. Nel caso segnalato, quindi, il
+codice malevolo si attivava se l'utente installava o aggiornava quel pacchetto;
+il callback viene eseguito nel contesto della transazione di pacman e può
+quindi ereditare i privilegi elevati usati per installare il pacchetto. Questo
+non significa che il codice ottenga sempre privilegi di amministratore in
+qualsiasi configurazione: conta la fase che lo avvia e l'eventuale separazione
+dei privilegi adottata dall'utente. La fonte documenta il meccanismo, ma non
+dimostra quante persone abbiano eseguito il pacchetto o quali sistemi siano
+stati compromessi.
+
+L'avviso Arch del 12 giugno conferma un'ondata di adozioni e aggiornamenti
+malevoli e invita a controllare le modifiche a \texttt{PKGBUILD} e agli script
+d'installazione~\cite{arch-aur-incident-2026}. Nel caso specifico, i
+manutentori ripristinarono la revisione precedente e sospesero l'account
+responsabile~\cite{aur-mail-gnome-randr}. I download o i pacchetti coinvolti
+non equivalgono a installazioni riuscite né a vittime accertate.
