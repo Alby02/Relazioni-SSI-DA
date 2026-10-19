@@ -1,11 +1,30 @@
 \section{Conseguenze, impatti e confronto dei rischi}
 \label{sec:conseguenze}
 
-% Persona 4 — circa 0,9 pagina.
 \subsection{Dal comportamento malevolo al danno}
-% Separare comportamento documentato, condizioni di esecuzione, impatti osservati
-% e impatti potenziali per i casi npm e AUR.
 
+Per valutare l'impatto reale di questi due attacchi, dobbiamo separare l'esposizione potenziale dal danno effettivo. Non basta aver scaricato il codice malevolo per considerarsi una vittima.
+
+\textbf{Caso npm (chalk/debug).} Il codice malevolo inserito nei pacchetti faceva una cosa sola: cambiare gli indirizzi dei wallet al momento delle transazioni in criptovalute \cite{ghsa-debug-2025}. Per fare danni, quindi, la libreria compromessa doveva compiere un percorso preciso: finire in un bundle del frontend, essere caricata nel browser e, alla fine, essere eseguita da un utente con un wallet collegato. I miliardi di download settimanali dicono quanto fossero diffusi i pacchetti, ma non quanti sistemi siano stati davvero colpiti. Le perdite tracciate, infatti, sono state di poche centinaia di dollari \cite{cso2025}. Il costo maggiore, secondo Wiz, è stato per le aziende, che hanno dovuto controllare le proprie dipendenze e ripulire le pipeline di CI/CD.
+
+\textbf{Caso AUR.} Con le ricette modificate di Arch Linux la situazione cambia: il codice gira direttamente sul computer di chi installa il pacchetto, che sia uno sviluppatore o un amministratore di sistema. L'avviso ufficiale \cite{archnews2026} non spiega cosa facesse il codice, ma l'analisi del pacchetto npm \texttt{atomic-lockfile}, inserito nelle ricette, mostra un comportamento da \emph{infostealer}, cioè un programma che ruba credenziali: cerca cookie, token di sessione, credenziali di GitHub e npm e chiavi SSH \cite{ioctl2026}. Quanto sia grave il danno dipende dai privilegi con cui il codice viene eseguito, e questi non si possono dare per scontati. Se la parte malevola gira con permessi di root, l'intero sistema può essere compromesso; con un utente normale, invece, il rischio riguarda soprattutto i dati e le credenziali di quell'utente. Va ricordato che si parla di comportamenti documentati dall'analisi, non di danni accertati: le fonti non indicano quante macchine siano state effettivamente colpite.
 \subsection{Confronto secondo il Cyber Risk Management}
-% Collegare caso, asset, minaccia, debolezza, tecnica, condizioni di esposizione
-% e rischio/impatto. Esplicitare incertezze, senza punteggi arbitrari.
+
+Possiamo mappare questi due incidenti usando il framework del Cyber Risk Management. Come si vede nella Tabella~\ref{tab:rischi_comparati}, abbiamo tralasciato percentuali e punteggi di rischio arbitrari, preferendo concentrarci sui fatti e sulle dinamiche documentate, dato che non esistono metriche pubbliche omogenee per confrontare i due ecosistemi.
+
+\begin{table}[htbp]
+\centering
+\footnotesize
+\renewcommand{\arraystretch}{1.2}
+\begin{tabular}{|p{1.4cm}|p{2cm}|p{1.6cm}|p{2cm}|p{2.3cm}|p{2.1cm}|p{2cm}|}
+\hline
+\textbf{Caso} & \textbf{Asset} & \textbf{Minaccia} & \textbf{Debolezza} & \textbf{Tecnica} & \textbf{Esposizione} & \textbf{Rischio / Impatto} \\ \hline
+\textbf{npm} & Integrità bundle; fondi crypto degli utenti & Attaccante esterno motivato dal profitto & Account senza 2FA vulnerabile a phishing & Modifica offuscata pubblicata da account legittimo & Esecuzione nel browser durante l'uso di un wallet & Frode crypto (danno economico limitato) e costi di bonifica \\ \hline
+\textbf{AUR} & Credenziali, file di sistema locali & Attaccante opportunistico & Adozione e compilazione senza code review & Script malevoli nascosti nel \texttt{PKGBUILD} & \texttt{makepkg} o helper AUR lanciati in locale & Furto chiavi SSH/token e possibile root takeover \\ \hline
+\end{tabular}
+\caption{Modellazione comparativa dei rischi per gli ecosistemi npm e AUR.}
+\label{tab:rischi_comparati}
+\end{table}
+
+\textbf{Differenze e incertezze.} Quello che emerge è una forte differenza nel tipo di fiducia abusata. Nel caso npm, è saltata la fiducia nell'\emph{identità} dell'autore: l'aggiornamento era firmato dal manutentore legittimo e l'attaccante ha sfruttato l'albero delle dipendenze per colpire in modo mirato un target specifico a valle (gli utenti crypto). In AUR, invece, è stata bucata la fiducia nel \emph{contenuto} procedurale: la vittima è lo stesso sviluppatore che si fida di una ricetta orfana presa e aggiornata dalla community. 
+Per quanto riguarda le incertezze, nel caso npm le dinamiche e i danni monetari modesti sono confermati e circoscritti \cite{ghsa-debug-2025, cso2025}. Lato AUR, invece, mancano dati oggettivi sui danni reali: i numeri che circolano (come i circa 400 pacchetti bucati iniziali) riguardano le ricette alterate trovate sul repository, ma le fonti non dicono quanti sistemi Linux siano stati effettivamente compromessi \cite{archnews2026, ioctl2026}. L'impatto reale su vasta scala resta quindi uno scenario potenziale non quantificabile.
