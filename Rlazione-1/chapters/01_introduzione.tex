@@ -1,3 +1,4 @@
+% !TEX root = ../main.tex
 \section{Introduzione}
 \label{sec:introduzione}
 \subsection{Rilevanza del problema e obiettivo}
@@ -19,9 +20,9 @@ In questo esposto vengono trattati e analizzati due esempi calzanti:
 \begin{itemize}
     \item[] l’attacco del settembre del 2025 a npm chalk e debug, in cui vennero 
 pubblicati aggiornamenti malevoli grazie alla compromissione di 
-un account di un manutentore tramite phising [1];
+un account di un manutentore tramite phising \cite{git-commit-npm-attack, npm-attack-check-point};
 \item[] l’attacco nel giugno del 2026, i quali hanno sfruttato la fiducia 
-negli script dei pacchetti di installazione nell’Arch User Repository (AUR)[2].
+negli script dei pacchetti di installazione nell’Arch User Repository (AUR) \cite{arch-aur-incident-2026}.
 \end{itemize}
 
 La presente relazione si propone come obbiettivo quello di studiare 
@@ -54,7 +55,7 @@ Nell’AUR, invece, si trovano delle \textbf{ricette}: ossia delle istruzioni
 per creare i pacchetti in loco. Il file utilizzato per amministrare e 
 installare le ricette è chiamato \texttt{PKGBUILD}. L’AUR è distinto dai 
 repository ufficiali di Arch Linux, perché non forniscono le stesse 
-garanzie [3].
+garanzie \cite{archwiki-aur}.
 
 Si fa notare che la differenza sostanziale fra i due procedimenti 
 sta nel fatto che npm installa la libreria nel progetto, mentre AUR applica 
