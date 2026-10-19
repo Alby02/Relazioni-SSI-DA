@@ -15,17 +15,13 @@ L'account con cui il manutentore pubblica le versioni è un punto sensibile:
 chi ne ottiene il controllo può distribuire aggiornamenti agli utilizzatori.
 
 \subsubsection{Ricette di build e installazione in AUR}
-
-L'Arch User Repository raccoglie ricette comunitarie, in particolare file
-\texttt{PKGBUILD}, che descrivono come recuperare, compilare e impacchettare un
-programma con \texttt{makepkg}. L'AUR non distribuisce direttamente i pacchetti
-binari dei repository ufficiali Arch e i contenuti sono forniti dagli utenti;
-prima di costruire un pacchetto è quindi necessario esaminare la ricetta e gli
-eventuali script associati~\cite{archwiki-aur}.
-
-I due percorsi hanno in comune la fiducia nel codice e in chi lo pubblica, ma
-avvengono in momenti diversi: npm aggiunge librerie al progetto, mentre una
-ricetta AUR guida la creazione e l'installazione di un pacchetto sul sistema.
+L'Arch User Repository (AUR) ospita ricette comunitarie, in particolare file
+\texttt{PKGBUILD}, non i pacchetti binari dei repository ufficiali.
+\texttt{makepkg} usa la ricetta per recuperare, compilare e impacchettare il
+programma; prima della costruzione l'utente deve esaminare il file e gli
+eventuali script associati~\cite{archwiki-aur,archwiki-makepkg}. In npm si
+integra una libreria nel progetto; con AUR si seguono istruzioni per creare e
+installare un pacchetto sul sistema.
 
 \subsection{Soggetti e asset interessati}
 \subsubsection{Chi può essere esposto}
@@ -36,8 +32,6 @@ progetto; e l'utente finale o di sistema, sul cui browser o computer può essere
 eseguito il codice distribuito.
 
 \subsubsection{Che cosa occorre proteggere}
-
-Gli asset da considerare sono gli account di pubblicazione, l'integrità dei
-pacchetti e delle ricette, l'ambiente di sviluppo e installazione, e i dati
-locali raggiungibili dal codice. Le conseguenze dipendono dal contesto e dai
-privilegi disponibili durante l'esecuzione.
+Gli asset rilevanti sono account di pubblicazione, integrità di pacchetti e
+ricette, ambienti di build e installazione e dati locali accessibili al
+processo. Il rischio varia in base al contesto e ai privilegi d'esecuzione.

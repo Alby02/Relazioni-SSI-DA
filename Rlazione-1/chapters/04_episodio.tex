@@ -7,11 +7,10 @@
 \subsubsection{Cronologia essenziale e componenti coinvolti}
 
 L'8 settembre 2025 l'account npm del manutentore fu usato per pubblicare
-versioni sospette di pacchetti, tra cui \texttt{chalk@5.6.1} e
-\texttt{debug@4.4.2}. Alle 13:16 UTC Aikido Security segnalò attività anomala
-di pubblicazione; poco dopo il manutentore confermò di aver perso il controllo
-dell'account. Segnalazioni sui repository GitHub di chalk e debug avvertirono
-gli sviluppatori di non usare le versioni coinvolte~\cite{aikido2025,chalk2025}.
+versioni sospette, tra cui \texttt{chalk@5.6.1} e \texttt{debug@4.4.2}.
+Aikido segnalò l'attività anomala alle 13:16 UTC; poco dopo il manutentore
+confermò di aver perso il controllo dell'account e i repository GitHub
+avvisarono di non usare le versioni coinvolte~\cite{aikido2025,chalk2025}.
 
 \begin{figure}[H]
     \centering
@@ -23,40 +22,29 @@ gli sviluppatori di non usare le versioni coinvolte~\cite{aikido2025,chalk2025}.
 
 \subsubsection{Risposta adottata}
 
-Le versioni compromesse furono rimosse da npm. L'advisory di debug raccomandò
-agli utilizzatori di aggiornare alle versioni corrette e, se le versioni
-malevole erano state installate, di rimuovere le dipendenze scaricate e
-ricostruire da zero i bundle browser potenzialmente contaminati
-~\cite{debug2025}. La cronologia qui riassunta descrive la risposta osservata;
-le misure preventive generali sono trattate nel capitolo~\ref{sec:mitigazioni}.
+Le versioni compromesse furono rimosse da npm. L'advisory raccomandò di
+aggiornare alle versioni corrette e, se quelle malevole erano state installate,
+di rimuovere le dipendenze scaricate e ricostruire da zero i bundle browser
+potenzialmente contaminati~\cite{debug2025}. Le misure preventive sono
+discusse nel capitolo~\ref{sec:mitigazioni}.
 
 \subsection{AUR, segnalazione del 12 giugno 2026}
 \label{subsec:aur-episodio}
 % Persona 3 — circa 0,5 pagina.
 \subsubsection{Esempio e cronologia essenziale}
-L'11 giugno 2026, sulla lista ufficiale \texttt{aur-general} fu segnalato un
-aggiornamento sospetto del pacchetto AUR \texttt{gnome-randr-rust}: un nuovo
-manutentore aveva aggiunto uno script che installava la dipendenza npm
-\texttt{atomic-lockfile}. La segnalazione indicava che il pacchetto era stato
-appena adottato e che l'aggiunta non era pertinente al software
-~\cite{aur-mail-gnome-randr,aur-video-2026}. Il giorno successivo Arch pubblicò un avviso
-relativo a un volume elevato di adozioni e aggiornamenti malevoli nell'AUR,
-chiedendo agli utenti di esaminare le modifiche a \texttt{PKGBUILD} e script
-d'installazione~\cite{arch-aur-incident-2026}. L'esempio mostra come una
-modifica apparentemente ordinaria alla ricetta potesse introdurre un passaggio
-verso npm, senza che il programma originale avesse bisogno di quella
-dipendenza; i dettagli dell'hook e del suo funzionamento sono descritti nella
-sezione~\ref{subsec:aur-tecnica}.
+L'11 giugno 2026 fu segnalata una modifica sospetta a
+\texttt{gnome-randr-rust}: un nuovo manutentore aveva aggiunto uno script
+che installava la dipendenza npm \texttt{atomic-lockfile}, non pertinente al
+software~\cite{aur-mail-gnome-randr}. Il giorno dopo Arch confermò un'ondata
+di adozioni e aggiornamenti malevoli e invitò a controllare le modifiche a
+\texttt{PKGBUILD} e agli script d'installazione
+~\cite{arch-aur-incident-2026}.
 
 \subsubsection{Evidenze disponibili e risposta}
-Nel thread, un manutentore AUR confermò che il commit era malevolo, ripristinò
-la revisione precedente del pacchetto e sospese l'account che aveva pubblicato
-la modifica~\cite{aur-mail-gnome-randr}. Questo documenta la risposta sul
-repository, ma non prova che il pacchetto sia stato installato o che il codice
-abbia raggiunto un sistema specifico. Nel successivo avviso, Arch spiegò che
-stava rintracciando i commit malevoli e cercando di impedire nuove modifiche;
-segnalò inoltre che, durante l'intervento, potevano verificarsi problemi nella
-creazione di account, negli aggiornamenti e nelle adozioni di pacchetti
-~\cite{arch-aur-incident-2026}. L'annuncio non offre una ricostruzione completa
-del singolo caso né di tutti i pacchetti coinvolti; perciò l'esempio non va
+Un manutentore AUR confermò la natura malevola del commit, ripristinò la
+revisione precedente e sospese l'account responsabile
+~\cite{aur-mail-gnome-randr}. Arch spiegò che stava rintracciando i commit
+malevoli e cercando di impedire nuove modifiche
+~\cite{arch-aur-incident-2026}. Questi interventi documentano la risposta sul
+repository, ma non provano installazioni o vittime; il singolo esempio non va
 esteso automaticamente all'intera ondata.

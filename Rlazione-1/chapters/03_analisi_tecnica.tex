@@ -40,7 +40,7 @@ da riga di comando non erano esposti a questo specifico comportamento
 \begin{figure}[H]
     \centering
     \includegraphics[width=0.9\textwidth]{Codice_malevolo.png}
-    \caption{Esempio di codice malevolo individuato nelle versioni compromesse.}
+    \caption{Esempio di codice malevolo nelle versioni compromesse.}
     {\footnotesize Fonte: \cite{aikido2025}\par}
     \label{fig:codice-malevolo-npm}
 \end{figure}
@@ -49,57 +49,34 @@ da riga di comando non erano esposti a questo specifico comportamento
 \label{subsec:aur-tecnica}
 % Persona 3 — circa 0,8 pagina.
 \subsubsection{Abuso della manutenzione della ricetta}
-Nel caso AUR, la fiducia non riguarda soltanto il programma finale: l'utente
-scarica una ricetta di compilazione e si affida alle istruzioni che questa
-contiene. L'AUR raccoglie ricette \texttt{PKGBUILD} inviate dagli utenti; non è
-un repository binario ufficiale e le ricette non sono sottoposte a una verifica
-completa da parte del progetto Arch~\cite{archwiki-aur}. Per ottenere un
-pacchetto, \texttt{makepkg} interpreta il \texttt{PKGBUILD}, che può scaricare
-file ed eseguire comandi durante la preparazione e la compilazione
-~\cite{archwiki-makepkg}.
+L'AUR ospita ricette \texttt{PKGBUILD} della comunità, non pacchetti binari
+ufficiali; \texttt{makepkg} può recuperare file ed eseguire i comandi previsti
+dalla ricetta~\cite{archwiki-aur,archwiki-makepkg}. Nel caso di
+\texttt{gnome-\allowbreak randr-\allowbreak rust}, un nuovo manutentore
+aggiunse uno script con
+\texttt{npm install atomic-lockfile yargs}, senza una ragione tecnica
+apparente. Un manutentore AUR confermò che la modifica era malevola e ripristinò
+il commit precedente~\cite{aur-mail-gnome-randr}. Il punto abusato fu
+l'adozione di una ricetta senza manutentore attivo, non l'accesso illegittimo
+al registro npm o ai repository ufficiali di Arch.
 
-Un esempio circoscritto è \texttt{gnome-randr-rust}. L'11 giugno 2026, un
-utente segnalò sulla lista ufficiale \texttt{aur-general} che un nuovo
-manutentore aveva adottato il pacchetto e aggiunto uno script d'installazione
-con il comando \texttt{npm install atomic-lockfile yargs}; il pacchetto non
-aveva una ragione tecnica apparente per introdurre npm. Un manutentore AUR
-confermò la natura malevola della modifica e ripristinò il commit precedente
-~\cite{aur-mail-gnome-randr}. Il passaggio di fiducia abusato era la facoltà
-di adottare e modificare una ricetta rimasta senza manutentore attivo, facendo
-apparire legittime nuove istruzioni di installazione. Si tratta di un abuso
-delle procedure di manutenzione AUR, non della compromissione del registro npm
-né dei repository ufficiali di Arch.
-
-La discussione tecnica sulla lista chiarì inoltre che il pacchetto npm
-richiamato conteneva un hook di ciclo di vita \texttt{preinstall}, che avviava
-un eseguibile Linux incluso nel pacchetto. In questo modo il comando aggiunto
-alla ricetta non si limitava a scaricare una libreria: passava l'esecuzione al
-codice distribuito attraverso il secondo ecosistema di pacchetti
-~\cite{aur-mail-gnome-randr}. Il fatto che un pacchetto AUR introduca npm o un
-altro gestore di pacchetti non prova da solo un attacco, ma quando la nuova
-dipendenza non ha relazione con il software e avvia script durante
-l'installazione costituisce un'anomalia da esaminare.
+Il pacchetto npm conteneva un hook \texttt{preinstall}, uno script eseguito
+automaticamente durante l'installazione, che avviava un eseguibile Linux:
+l'installazione della dipendenza trasferiva così l'esecuzione al payload
+~\cite{aur-mail-gnome-randr}. Introdurre npm in un pacchetto AUR non è di per
+sé malevolo, ma una dipendenza estranea al programma che esegue codice in fase
+d'installazione è un'anomalia da verificare. La presenza di un altro gestore di
+pacchetti, presa isolatamente, non prova quindi un attacco.
 
 \subsubsection{Ambiente di esecuzione e privilegi}
-La catena è: adozione del pacchetto $\rightarrow$ modifica della ricetta/script
-\texttt{.install} $\rightarrow$ esecuzione di \texttt{npm install} nel callback
-\texttt{post\_install}. La compilazione con \texttt{makepkg} e l'installazione
-con \texttt{pacman} sono fasi distinte: Arch vieta di eseguire \texttt{makepkg}
-come amministratore, mentre il callback di uno script \texttt{.install} viene
-eseguito durante la transazione di installazione o aggiornamento
-~\cite{archwiki-makepkg,arch-alpm-scriptlet}. Nel caso segnalato, quindi, il
-codice malevolo si attivava se l'utente installava o aggiornava quel pacchetto;
-il callback viene eseguito nel contesto della transazione di pacman e può
-quindi ereditare i privilegi elevati usati per installare il pacchetto. Questo
-non significa che il codice ottenga sempre privilegi di amministratore in
-qualsiasi configurazione: conta la fase che lo avvia e l'eventuale separazione
-dei privilegi adottata dall'utente. La fonte documenta il meccanismo, ma non
-dimostra quante persone abbiano eseguito il pacchetto o quali sistemi siano
-stati compromessi.
-
-L'avviso Arch del 12 giugno conferma un'ondata di adozioni e aggiornamenti
-malevoli e invita a controllare le modifiche a \texttt{PKGBUILD} e agli script
-d'installazione~\cite{arch-aur-incident-2026}. Nel caso specifico, i
-manutentori ripristinarono la revisione precedente e sospesero l'account
-responsabile~\cite{aur-mail-gnome-randr}. I download o i pacchetti coinvolti
-non equivalgono a installazioni riuscite né a vittime accertate.
+La catena era: adozione della ricetta, modifica dello script \texttt{.install},
+esecuzione di \texttt{npm install} nel callback \texttt{post\_install} e avvio
+dell'hook \texttt{preinstall} del pacchetto npm
+~\cite{aur-mail-gnome-randr}. La compilazione con \texttt{makepkg} e
+l'installazione con \texttt{pacman} sono fasi distinte: Arch vieta di eseguire
+\texttt{makepkg} come amministratore, mentre uno script \texttt{.install}
+viene eseguito durante la transazione d'installazione o aggiornamento
+~\cite{archwiki-makepkg,arch-alpm-scriptlet}. Se \texttt{pacman} è avviato
+con privilegi elevati, il callback può ereditarli; ciò dipende comunque dalla
+fase e dalla separazione dei privilegi adottata. Le fonti descrivono il
+meccanismo, ma non quantificano installazioni o sistemi compromessi.
