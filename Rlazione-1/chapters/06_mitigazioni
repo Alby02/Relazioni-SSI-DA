@@ -1,0 +1,36 @@
+\section{Mitigazioni e comportamenti corretti}
+\label{sec:mitigazioni}
+
+Le misure descritte di seguito rispondono alle debolezze analizzate nelle sezioni precedenti: per ciascuna indichiamo chi deve adottarla e in quali casi non basta. Alcune sono state introdotte o raccomandate dagli stessi progetti dopo una serie di attacchi.
+
+\subsection{Ridurre il rischio prima dell'incidente}
+\label{sec:ridurre-rischio-prima}
+
+
+\subsubsection{Controllo degli account e delle modifiche}
+\label{sec:controllo-account}
+
+Nel caso npm un solo account di pubblicazione, raggirato con una mail di phishing, è stato sufficente a distribuire versioni malevole (sez. 3.1).Una prima misura è la chiave di sicurezza (WebAuthn), che la documentazione npm descrive come metodo di 2FA [docs npm]. GitHub ha annunciato di voler sostituire il 2FA a codice temporaneo con uno basato su FIDO e raccomanda ai manutentori di usare WebAuthn [blog GitHub, 22/9/2025]. La misura spetta al manutentore. Il limite è che protegge l’account, ma non le situazioni in cui la fiducia è abusata senza rubare un account, come nell’AUR, dove nuovi account hanno adottato pacchetti orfani.
+Nel caso AUR l’abuso passa da adozioni e aggiornamenti malevoli di pacchetti, e Arch raccomanda di rivedere ogni modifica a PKGBUILD e script di installazione quando si aggiorna [F2]. La misura spetta all’utente che installa. Ci sono alcuni strumenti disponibili per scannerizzare il contenuto di PKGBUILD ma il limite è che non sostituisce la revisione manuale attenta [wiki.archlinux.org title Arch UsermRepository] che comunque non non tutti fanno , soprattutto gli aggiornamenti, e all’attaccante basta riuscirci una volta.
+
+
+\subsubsection{Attendere prima di adottare nuove release}
+\label{sec:attendere-release}
+
+Secondo l’advisory ufficiale, npm ha rimosso la versione compromessa nel corso della giornata dell’8 settembre 2025 [F1], quindi un’attesa di almeno 24 ore avrebbe superato quella finestra. pnpm permette di impostare un’età minima delle versioni, di default è un giorno [F3], e Dependabot attende almeno tre giorni prima di proporre un aggiornamento, senza ritardare quelli di sicurezza [blog GitHub, 2026]. La misura spetta a chi sviluppa il progetto. Il limite è che il ritardo riduce l’esposizione ma non la elimina: chi usa una cache o un mirror può ricevere ancora la versione compromessa [F1], e la stessa documentazione di pnpm parla di probabilità, non di garanzia [F3].
+
+\subsection{Reagire e continuare a controllare}
+\label{sec:reagire-controllare}
+
+
+\subsubsection{Risposta proporzionata all'esposizione}
+\label{sec:risposta-proporzionata}
+
+Nel caso npm il registro ha rimosso la versione malevola e il proprietario del pacchetto ha pubblicato nuove versioni per svuotare le cache dei registri privati; chi gestisce mirror deve eliminare le versioni compromesse [F1]. Gli sviluppatori che usavano la libreria nel browser devono aggiornare all’ultima patch (ultima versione pubblicata dal progetto), rimuovere \texttt{node\_modules}, svuotare la cache del gestore di pacchetti e ricostruire i bundle [F1]. Il limite è che togliere il pacchetto dal registro non ripulisce i bundle già costruiti [F1].
+Nel caso AUR gli interventi documentati riguardano il repository: ripristino della revisione precedente e sospensione dell'account, oltre alle restrizioni temporanee decise da Arch. Per chi avesse già installato la versione malevola le fonti consultate non indicano come ripristinare il sistema; poiché lo script si attiva all'installazione o all'aggiornamento, la prima verifica è controllare se il pacchetto è stato installato o aggiornato dopo l'adozione.
+
+\subsubsection{Controllo degli avvisi e dei cambiamenti}
+\label{sec:controllo-avvisi}
+Sia l’advisory di debug sia l’avviso di Arch indicano azioni concrete agli utenti, quindi seguire gli avvisi ufficiali dei progetti usati è parte della difesa [F1, F2]. Gli utenti AUR sono invitati a segnalare alla mailing list aur-general i commit sospetti sui pacchetti che usano [F2]. Poiché l’avviso parla di adozioni malevole, un cambio di manutentore è un’anomalia da verificare prima di aggiornare.
+
+
