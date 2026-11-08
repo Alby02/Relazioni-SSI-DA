@@ -1,0 +1,50 @@
+\documentclass[a4paper,12pt]{article}
+
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage[italian]{babel}
+\usepackage[margin=2.5cm]{geometry}
+\usepackage{graphicx}
+\usepackage{csquotes}
+\usepackage[backend=biber,style=numeric,sorting=none]{biblatex}
+\addbibresource{references.bib}
+\usepackage[hidelinks,hypertexnames=false]{hyperref}
+\setcounter{biburlnumpenalty}{9000}
+\setcounter{biburlucpenalty}{9000}
+\setcounter{biburllcpenalty}{9000}
+\usepackage{float}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{0.5em}
+
+\graphicspath{{images/}}
+
+\title{Login federato: funzionamento e vulnerabilità. Il caso Sign in with Apple del 2020}
+\author{
+    \textbf{Team:} \\
+    Zero Day Zero Voglia\\ 
+    \\
+    \textbf{Autore:} \\
+    Alberto Montrucchio s360540 \quad Andrea Lanzetti s358021\\
+    Rizzo Gabriele s352512 \quad Kiara Kapllani s348966 \\
+    Daniele Manetti s364096 \quad Alessandro Barbieri s364188
+}
+\date{\today}
+
+\begin{document}
+
+\maketitle
+\tableofcontents
+\newpage
+
+\input{chapters/01_introduzione}
+\input{chapters/02_funzionamento}
+\input{chapters/03_analisi_apple_2020}
+\input{chapters/04_crm}
+\input{chapters/05_conseguenze}
+\input{chapters/06_mitigazioni}
+\input{chapters/07_conclusioni}
+\input{chapters/08_appendice_genai}
+
+\printbibliography[heading=bibintoc,title={Bibliografia}]
+
+\end{document}
