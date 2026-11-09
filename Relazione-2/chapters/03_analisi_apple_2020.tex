@@ -2,15 +2,116 @@
 \label{sec:analisi-tecnica}
 
 \subsection{Presentazione del caso e contesto della scoperta}
+Nell'aprile 2020 il ricercatore di sicurezza indipendente Bhavuk Jain individuò
+una grave vulnerabilità nel servizio \emph{Sign in with Apple}, introdotto da
+Apple nel 2019 insieme a iOS~13. Il difetto fu segnalato ad Apple attraverso
+l'\emph{Apple Security Bounty}~\cite{apple-bounty-2019} e successivamente rilasciato
+la notizia al pubblico il 30 maggio 2020, a problema risolto~\cite{jain-apple-2020}.
+Alla segnalazione è seguita una ricompensa di 100.000 dollari, e Apple ha dichiarato
+di aver analizzato i propri log senza riscontrare abusi o compromissioni di
+account legate alla vulnerabilità~\cite{jain-apple-2020,goodin2020}.
+
+Il caso è particolarmente significativo perché il difetto non riguardava
+un'applicazione di terze parti, ma direttamente l'\emph{Identity Provider}:
+ossia nel componente su cui tutte le applicazioni aderenti al servizio basano
+la propria fiducia.
 
 \subsection{Descrizione della vulnerabilità individuata}
+Secondo la descrizione del ricercatore, era possibile ottenere da Apple un
+token di identità valido per \textbf{qualsiasi indirizzo email} indicato in una
+richiesta, anche se tale indirizzo non apparteneva all'utente che stava
+effettuando la richiesta~\cite{jain-apple-2020}. In particolare, Apple
+rispondeva con un \emph{ID Token} correttamente firmato che attestava
+l'appartenenza di quell'email a chi presentava il token. Poiché la firma era
+autentica, il token risultava indistinguibile da uno emesso legittimamente.
+
+Il risultato era che un attaccante poteva generare, senza conoscere alcuna
+password, un token di identità riferita all'account della vittima.
+Il ricercatore precisa che l'attacco funzionava a prescindere dal fatto che
+l'indirizzo email indicato fosse associato a un Apple ID valido o meno ~\cite{jain-apple-2020}.
 
 \subsection{Analisi tecnica del meccanismo di attacco}
+Il flusso legittimo di \emph{Sign in with Apple} è simile a OAuth~2.0: l'utente
+si autentica presso Apple, sceglie se condividere il proprio indirizzo email
+reale o un indirizzo anonimo generato da Apple (\emph{relay}) e Apple restituisce
+all'applicazione un \emph{ID Token} in formato JWT che contiene, tra gli altri,
+l'identificativo dell'utente e l'email~\cite{apple-authentication,jain-apple-2020}.
+
+Nel passaggio in cui veniva richiesto il token, la richiesta inviata ad Apple
+includeva un campo con l'indirizzo email. Il problema consisteva nel fatto che
+Apple non verificasse che tale valore corrispondesse all'utente effettivamente
+autenticato nella sessione, e di conseguenza firmava il token con email della vittima.
+L'attacco si articolava quindi in tre passi~\cite{jain-apple-2020}:
+
+\begin{enumerate}
+    \item l'attaccante invia ad Apple la richiesta di token indicando l'email
+    della vittima;
+    \item Apple risponde con un \emph{ID Token} firmato da Apple contenente l'email della
+    vittima;
+    \item l'attaccante presenta il token all'applicazione di terze parti che
+    utilizza \emph{Sign in with Apple}, la quale, se si limita a verificare la
+    firma, lo accetta e apre una sessione come se fosse la vittima.
+\end{enumerate}
+
+Si tratta di una vulnerabilità di \textbf{controllo dell'autorizzazione lato
+IdP}: il sistema autenticava correttamente il richiedente, ma non verificava che
+fosse autorizzato a ottenere un'attestazione relativa a quella specifica
+identità. Il ricercatore cita come servizi che adottavano il login di Apple
+Dropbox, Spotify, Airbnb e Giphy, precisando però di non averne testato
+l'effettiva vulnerabilità~\cite{jain-apple-2020}.
 
 \subsection{Credenziali, token e procedure di autenticazione coinvolte}
+Gli elementi coinvolti nel processo sono i seguenti~\cite{apple-authentication,apple-verifying-user,openid-connect-core}:
+
+\begin{itemize}
+    \item \textbf{Authorization code}: codice temporaneo emesso da Apple al
+    termine dell'autenticazione dell'utente, che l'applicazione scambia con il
+    token vero e proprio;
+    \item \textbf{ID Token}: token in formato JWT~\cite{rfc7519}, composto da
+    intestazione, \emph{payload} e firma. Il \emph{payload} contiene i
+    \emph{claim} sull'utente, tra cui l'emittente (\texttt{iss}, ovvero
+    \texttt{https://appleid.apple.com}), il destinatario (\texttt{aud}, cioè
+    l'identificativo dell'applicazione), la scadenza (\texttt{exp}), l'identificativo
+    univoco dell'utente (\texttt{sub}) e l'indirizzo email con il relativo stato
+    di verifica (\texttt{email}, \texttt{email\_verified});
+    \item \textbf{Firma digitale}: apposta da Apple con la propria chiave
+    privata e verificabile da chiunque tramite le chiavi pubbliche che Apple
+    pubblica.
+\end{itemize}
+
+L'applicazione non conosce la password dell'utente: la prova dell'identità è
+costituita unicamente dal token. Nel caso in esame, tutte le credenziali
+dell'attaccante erano di fatto sostituite da un token autentico ottenuto con un
+parametro manipolato.
 
 \subsection{Debolezze nella gestione e nella verifica dei token}
+La debolezza principale risiedeva nell'\textbf{emissione} del token da parte
+dell'IdP, non nella sua struttura crittografica: la firma era valida perché
+generata realmente da Apple. Ne deriva che una verifica della sola firma da parte
+delle applicazioni non era sufficiente a rilevare l'abuso~\cite{jain-apple-2020}.
+
+Dal lato delle applicazioni, le indicazioni ufficiali prevedono di controllare
+firma, emittente, destinatario, scadenza e identificativo dell'utente
+(\texttt{sub})~\cite{apple-verifying-user}. I servizi che, oltre alla firma, si
+affidavano solo all'indirizzo email come chiave di identificazione dell'account
+erano i più esposti. Ne risulta un caso di \emph{fiducia eccessiva} nell'IdP:
+quando il provider è compromesso o difettoso, le applicazioni prive di ulteriori
+controlli ereditano direttamente la vulnerabilità~\cite{nist800-63c}.
 
 \subsection{Il ruolo dell'email e dell'identità dell'utente nel processo di autenticazione}
+L'indirizzo email ha un ruolo centrale perché molte applicazioni lo utilizzano
+come identificativo per associare l'accesso federato a un account già
+esistente. Questa scelta è comoda, ma implica che chi riesce a ottenere un token
+con l'email di un altro utente venga riconosciuto come tale. L'email è infatti un
+attributo \emph{descrittivo} dell'identità, che può cambiare nel tempo e che,
+nel caso di Apple, può anche essere un indirizzo anonimo generato dal
+servizio.
 
-
+L'identificativo più affidabile è invece il claim \texttt{sub}, stabile e
+univoco per ciascuna coppia utente--applicazione, che Apple indica come
+riferimento per riconoscere l'utente~\cite{apple-verifying-user,openid-connect-core}.
+Il caso del 2020 mostra quindi che la sicurezza dell'autenticazione federata
+dipende dalla corretta associazione tra l'utente realmente autenticato e le
+informazioni di identità riportate nel token, e che le applicazioni dovrebbero
+basarsi su identificativi robusti e su ulteriori controlli, e non sulla sola
+email.
