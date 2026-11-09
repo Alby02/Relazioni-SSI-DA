@@ -1,10 +1,61 @@
-% !TEX root = ../main.tex
 \section{Il login federato: funzionamento e caratteristiche}
 \label{sec:contesto}
 
+Per comprendere come possa verificarsi una vulnerabilità in un sistema di login
+federato, è necessario chiarire prima quali sono i concetti su cui si fonda
+questo modello e quali compiti spettano alle diverse entità coinvolte nel
+processo di accesso.
+
 \subsection{Definizione di autenticazione federata e Single Sign-On (SSO)}
+Secondo le linee guida del NIST (SP~800-63C), l'\textbf{autenticazione
+federata} (\emph{Federated Identity}) è un meccanismo che consente di
+trasmettere l'identità autenticata di un utente e i relativi attributi
+(\emph{claim}) attraverso domini di sicurezza distinti~\cite{nist800-63c}. In
+altre parole, un servizio esterno accetta il risultato di un'autenticazione
+svolta da un altro soggetto fidato, senza dover verificare in prima persona le
+credenziali primarie dell'utente.
+
+Nel linguaggio comune i termini autenticazione federata e \textbf{Single
+Sign-On (SSO)} vengono spesso sovrapposti, ma indicano due concetti non
+identici. Il \emph{Single Sign-On} è la funzionalità che permette a un utente,
+dopo essersi autenticato una sola volta, di accedere a più applicazioni o
+risorse all'interno della stessa sessione senza dover reinserire le
+credenziali, tipicamente però dentro i confini di una singola organizzazione
+(ad esempio i vari portali interni di un'azienda). L'autenticazione federata
+estende invece questo principio tra organizzazioni e domini completamente
+indipendenti tra loro, basandosi su rapporti di fiducia (\emph{trust}) e sullo
+scambio di attestazioni crittografiche
+(\emph{token})~\cite{nist800-63c,openid-connect-core}.
 
 \subsection{Ruolo dell'Identity Provider (IdP) e del Service Provider (SP)}
+Il funzionamento del login federato si basa sulla separazione tra chi verifica
+l'identità dell'utente e chi eroga il servizio finale. Gli attori principali
+coinvolti, oltre all'utente, sono due~\cite{nist800-63c,openid-connect-core}:
+
+\begin{itemize}
+    \item \textbf{Identity Provider (IdP):} è il fornitore che gestisce
+    l'identità digitale dell'utente (ad esempio Apple, Google o Microsoft).
+    L'IdP ha il compito di registrare l'utente, custodire le sue credenziali o
+    fattori di autenticazione (password, dati biometrici locali tramite
+    Face~ID/Touch~ID, codici MFA) ed eseguire materialmente il riconoscimento.
+    Una volta verificata l'identità, l'IdP genera e firma digitalmente un token
+    (ad esempio un \emph{ID Token} in formato JWT) che contiene i \emph{claim}
+    sull'utente, come l'identificativo univoco dell'account e l'indirizzo
+    email;
+    \item \textbf{Service Provider (SP)}, indicato anche come \textbf{Relying
+    Party (RP)} nello standard OpenID Connect e nei documenti NIST: è
+    l'applicazione o il sito web di terze parti a cui l'utente vuole accedere.
+    Lo SP non conosce né memorizza la password dell'utente, ma delega il
+    controllo all'IdP e si affida (\emph{relies on}) al token ricevuto per
+    identificare l'utente e autorizzare la sessione di accesso.
+\end{itemize}
+
+Questo modello di delega introduce una precisa ripartizione delle
+responsabilità: l'IdP deve garantire che il token venga emesso solo a seguito
+di una verifica corretta dell'utente a cui appartiene l'identità, mentre lo SP
+ha il compito di validare rigorosamente l'autenticità, la firma e i parametri
+del token prima di concedere l'accesso al proprio
+servizio~\cite{nist800-63c,owasp-auth-cheatsheet}.
 
 \subsection{Funzionamento dei protocolli OAuth 2.0 e OpenID Connect}
 

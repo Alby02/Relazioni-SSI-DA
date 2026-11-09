@@ -1,10 +1,68 @@
-% !TEX root = ../main.tex
 \section{Introduzione}
 \label{sec:introduzione}
 
+L'autenticazione digitale rappresenta il primo livello di difesa per proteggere
+l'accesso agli account personali e alle risorse informatiche. Con la crescita
+dei servizi online, i meccanismi utilizzati per verificare l'identità degli
+utenti sono cambiati profondamente, passando da credenziali gestite
+singolarmente da ogni sito a sistemi centralizzati che permettono di accedere a
+più applicazioni tramite un unico account.
+
 \subsection{Evoluzione dei sistemi di autenticazione digitale}
-aaa
+Per molto tempo il modello standard di autenticazione sul web si è basato quasi
+esclusivamente sulla coppia \emph{username} e \emph{password} gestita
+localmente da ciascun servizio. Con l'aumento del numero di piattaforme
+utilizzate ogni giorno dagli utenti, questo approccio ha però mostrato limiti
+evidenti sia dal punto di vista dell'usabilità sia da quello della sicurezza.
+
+Ricordare decine di credenziali diverse e complesse è infatti difficile per un
+utente medio, e questo porta spesso a comportamenti rischiosi come la scelta di
+password deboli o il riutilizzo della stessa password su più
+siti~\cite{nist800-63b}. Di conseguenza, la compromissione di un singolo
+servizio tramite un \emph{data breach} può esporre gli account dello stesso
+utente su altre piattaforme, favorendo attacchi automatizzati come il
+\emph{credential stuffing}. Anche per chi gestisce le applicazioni, conservare
+e proteggere internamente i database delle credenziali comporta costi e
+responsabilità rilevanti. Per ridurre questi rischi si sono progressivamente
+diffusi meccanismi di autenticazione a più fattori (MFA) e modelli basati sulla
+delega dell'autenticazione a fornitori esterni.
+
 \subsection{Nascita e diffusione del login federato}
-aaa
+Per superare la frammentazione degli account è nato il modello del
+\textbf{login federato}. Inizialmente adottato soprattutto in ambito aziendale
+e universitario (ad esempio attraverso lo standard SAML o infrastrutture come
+\texttt{eduroam}) per consentire l'accesso a servizi condivisi tra enti
+diversi, questo approccio si è poi diffuso su larga scala anche nel web
+consumer grazie ai cosiddetti \emph{social login}, come «Accedi con Google»,
+«Accedi con Facebook» o «Sign in with Apple»~\cite{nist800-63c}.
+
+Il login federato permette all'utente di sfruttare un'identità digitale già
+esistente presso un fornitore principale per autenticarsi su applicazioni di
+terze parti, senza dover creare e ricordare una nuova password per ogni
+servizio. Questo migliora notevolmente l'esperienza d'uso, specialmente sui
+dispositivi mobili, e permette alle applicazioni di appoggiarsi a grandi
+provider che dispongono già di infrastrutture di sicurezza avanzate e di MFA.
+Allo stesso tempo, però, concentrare l'autenticazione su pochi fornitori sposta
+la superficie d'attacco sulla corretta comunicazione tra i sistemi coinvolti.
+
 \subsection{Obiettivi e struttura della relazione}
-aaa
+L'obiettivo di questa relazione è analizzare il funzionamento dei sistemi di
+login federato e comprenderne i potenziali punti deboli, approfondendo come
+caso di studio reale la vulnerabilità scoperta nel 2020 nel servizio
+\emph{Sign in with Apple} dal ricercatore di sicurezza Bhavuk
+Jain~\cite{jain2020}.
+
+Nel Capitolo~\ref{sec:contesto} vengono presentate le basi tecniche del login
+federato, distinguendo tra autenticazione federata e \emph{Single Sign-On},
+definendo i ruoli di \emph{Identity Provider} e \emph{Service Provider} e
+illustrando i protocolli OAuth~2.0, OpenID Connect e l'architettura di
+\emph{Sign in with Apple}. Il Capitolo~\ref{sec:analisi-tecnica} entra nel
+dettaglio tecnico della vulnerabilità del 2020, mostrando come un difetto nella
+validazione dei parametri permettesse di generare token validi per account
+altrui. Nei Capitoli~\ref{sec:episodi} e~\ref{sec:conseguenze} il caso viene
+analizzato secondo l'approccio del \emph{Cyber Risk Management}, valutando
+minacce, probabilità di sfruttamento, impatti su riservatezza, integrità e
+disponibilità (CIA) e conseguenze per utenti, applicazioni e provider. Infine,
+il Capitolo~\ref{sec:mitigazioni} discute le correzioni introdotte da Apple e
+le buone pratiche di verifica dei token, mentre il
+Capitolo~\ref{sec:conclusioni} raccoglie le conclusioni sul tema.
