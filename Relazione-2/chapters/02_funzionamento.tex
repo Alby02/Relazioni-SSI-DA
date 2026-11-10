@@ -111,7 +111,7 @@ Ricevuto l'ID Token, l'RP non deve fidarsene a priori. Deve controllare che l'em
 OIDC prevede anche una variante, il flusso ibrido, in cui una parte dei token è restituita già nella risposta di autorizzazione e il resto dal token endpoint~\cite[§3.3]{openid-connect-core}. Con \texttt{response\_type=code id\_token} arrivano insieme il code e un ID Token~\cite[§3.3.2.5]{openid-connect-core}, e in questo caso il nonce è obbligatorio~\cite[§3.3.2.1]{openid-connect-core}.
 
 \subsection{Sign in with Apple: architettura e modalità di autenticazione}
-Sign in with Apple permette di accedere ad app e siti di terze parti con il proprio Apple Account. Secondo il ricercatore Jain che nel 2020 ne scoprì la vulnerabilità, funziona in modo simile a OAuth 2.0~\cite{jain-apple-2020}: Apple è l'IdP (in OIDC, l'OP) e l'app o il sito è lo SP (l'RP).
+Sign in with Apple permette di accedere ad app e siti di terze parti con il proprio Apple Account. Secondo il ricercatore che nel 2020 ne scoprì la vulnerabilità, funziona in modo simile a OAuth 2.0~\cite{jain-apple-2020}: Apple è l'IdP (in OIDC, l'OP) e l'app o il sito è lo SP (l'RP).
 
 L'app avvia una sessione di autenticazione con il proprio server, la associa all'ID token tramite un nonce e può chiedere informazioni sull'utente, come nome ed email~\cite{apple-authentication}. L'utente si autentica con il proprio Apple Account: sui dispositivi Apple con Face ID, Touch ID o passcode (o con la password dell'account se il passcode non è impostato), sugli altri dispositivi con password e codice a due fattori~\cite{apple-authentication}. Se l'autenticazione riesce, Apple restituisce all'app un identity token in formato JWT, un authorization code monouso e un identificativo utente~\cite{apple-authentication}.
 
@@ -121,7 +121,6 @@ Come ultimo passaggio, il server dell'app verifica poi il token: Apple indica di
 
 Rispetto a OIDC base ci sono due caratteristiche legate alla privacy. L'utente può nascondere la propria email: in quel caso Apple genera un indirizzo di inoltro specifico per l'app e lo inserisce nel token~\cite{jain-apple-2020}. Nome ed email vengono poi consegnati all'app solo al primo accesso; il nome non è mai nel token, mentre l'email compare nel token in tutte le richieste successive~\cite{apple-request}. Secondo Jain, l'email contenuta nel token è ciò che l'app usa per far accedere l'utente~\cite{jain-apple-2020}: è il punto che il Capitolo 3 analizza.
 
-\subsection{Vantaggi e criticità dei sistemi di login federato}
 \subsection{Vantaggi e criticità dei sistemi di login federato}
 Il login federato semplifica l'accesso, ma sposta fiducia e rischio su pochi punti. Tra i vantaggi:
 \begin{itemize}
