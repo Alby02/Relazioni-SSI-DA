@@ -3,4 +3,59 @@
 
 \subsection{Considerazioni sull'affidabilità del login federato}
 
+Con il login federato l'applicazione non verifica l'utente, ma
+un'attestazione emessa da qualcun altro su di lui. Finché l'attestazione è
+corretta, il modello elimina i problemi visti nel Capitolo~\ref{sec:introduzione}: 
+password riutilizzate, credential stuffing, database di credenziali da proteggere. 
+Quando l'IdP firma un'attestazione falsa, i fattori dell'utente non contano più, 
+e la firma digitale non aiuta: garantisce chi ha prodotto il token, non che il contenuto sia vero. 
+Nel 2020 la verifica della firma confermava soltanto che l'errore era di Apple.
+
+L'analisi ha dei limiti: i dettagli tecnici vengono quasi solo dal resoconto
+del ricercatore, perché Apple non ha descritto il difetto~\cite{infoq2020}, e
+non si sa quante applicazioni fossero vulnerabili. Gli impatti dei
+Capitoli~\ref{sec:episodi} e~\ref{sec:conseguenze} sono quindi scenari
+possibili, non danni documentati.
+
 \subsection{Il caso Apple come esempio dei rischi della centralizzazione dell'autenticazione}
+
+La centralizzazione funziona nei due sensi, come riassume la Tabella~\ref{tab:centralizzazione}.
+
+\begin{table}[H]
+    \centering
+    \small
+    \begin{tabular}{|p{0.22\textwidth}|p{0.33\textwidth}|p{0.33\textwidth}|}
+        \hline
+         & \textbf{Password gestita da ogni sito} & \textbf{Login federato} \\
+        \hline
+        Furto del database di un sito & Colpisce gli utenti di quel sito, e
+        altri siti se la password è riutilizzata & Il sito non conserva
+        password da rubare \\
+        \hline
+        Errore nel sistema che verifica l'identità & Riguarda un solo sito &
+        Riguarda tutte le app che si affidano all'IdP \\
+        \hline
+        Chi corregge & Ogni sito, separatamente & L'IdP, una volta per tutti \\
+        \hline
+        Cosa può fare l'utente & Password unica e robusta, MFA & Poco: la
+        sicurezza dipende da IdP e applicazioni \\
+        \hline
+    \end{tabular}
+    \caption{Autenticazione locale e federata a confronto.}
+    {\footnotesize Fonte: elaborazione del gruppo sui Capitoli~\ref{sec:introduzione}, \ref{sec:contesto} e~\ref{sec:mitigazioni}.\par}
+    \label{tab:centralizzazione}
+\end{table}
+
+In termini di Cyber Risk Management, affidare l'autenticazione a pochi provider
+riduce la probabilità di molti errori, perché ci sono meno password e meno
+implementazioni da sbagliare, ma aumenta l'impatto di quelli che restano. 
+Nel 2020 un solo difetto esponeva tutte le applicazioni con Sign in with Apple prive di controlli aggiuntivi, e
+una sola correzione le ha protette tutte. L'esito favorevole, però, è dipeso da
+chi ha trovato il difetto per primo: un ricercatore che lo ha segnalato tramite
+il bug bounty~\cite{jain-apple-2020}. 
+Un attaccante avrebbe potuto usarlo in silenzio, e i log sarebbero serviti a scoprirlo dopo, non a evitarlo.
+ 
+Per chi usa questi servizi il login federato resta una scelta ragionevole
+rispetto a riutilizzare la stessa password su decine di siti. 
+La sua sicurezza, però, non è nelle mani dell'utente: dipende da quanto bene l'IdP controlla ciò
+che firma e da quanto poco le applicazioni si fidano di un singolo claim.

@@ -14,9 +14,8 @@ applicazioni collegate senza interventi da parte loro.
 
 \subsection{ Verifica corretta dei token e delle informazioni di identità}
 
-Il token falso superava i controlli su firma, emittente, destinatario e
-scadenza descritti nel Capitolo~\ref{sec:contesto}, perché era stato emesso
-davvero da Apple. Conta quindi anche quale claim l'applicazione usa per ritrovare l'account.
+Il token falso superava la verifica della firma (Capitolo~\ref{sec:analisi-tecnica}), perché era stato emesso davvero da Apple. 
+Conta quindi anche quale claim l'applicazione usa per ritrovare l'account.
 OpenID Connect stabilisce che solo la coppia \texttt{sub}--\texttt{iss}
 identifica l'utente in modo stabile e che l'email non va usata come
 identificativo univoco~\cite[§5.7]{openid-connect-core}, come indica anche
@@ -31,13 +30,13 @@ che l'attaccante può modificare.
 È la categoria che OWASP chiama \emph{Broken Access Control}, prima voce della Top~10 2025:
 il server riceve dal client l'identificativo di una risorsa, qui l'email, e non controlla che chi la chiede
 abbia diritto di ottenerla~\cite{owasp-top10-a01}.
-Per lo SP vale il principio opposto: secondo Jain l'attacco riusciva solo contro i servizi
+Per lo SP vale un principio complementare: secondo Jain l'attacco riusciva solo contro i servizi
 privi di misure aggiuntive~\cite{jain-apple-2020}, quindi nessun singolo claim
 ricevuto dall'IdP dovrebbe bastare da solo ad aprire un account.
 
 \subsection{Buone pratiche per sviluppatori e gestori dei servizi}
 
-Il punto più delicato è il collegamento tra un account già creato con email e
+Il punto più delicato del ciclo di vita dell'account è il collegamento tra un account già creato con email e
 password e un nuovo accesso con Apple: se l'applicazione unisce i due account
 solo perché l'email coincide, basta un token con l'email giusta per entrare.
 Chiedere di accedere anche con il metodo originale prima del collegamento chiude
@@ -55,6 +54,7 @@ Con «Nascondi la mia email», però, Apple genera un indirizzo unico e
 casuale~\cite{apple-hide-my-email}; poiché l'attacco richiedeva l'email con cui
 la vittima era registrata nell'applicazione, un indirizzo casuale era più
 difficile da conoscere (è una nostra deduzione dal meccanismo descritto da Jain).
-Conviene inoltre rimuovere dalle impostazioni dell'Apple Account le app
-collegate che non si usano più~\cite{apple-manage-apps}: ogni collegamento
+Conviene inoltre revocare, dalle impostazioni dell'Apple Account, l'accesso
+delle app collegate che non si usano più~\cite{apple-manage-apps}: è l'ultima
+fase del ciclo di vita della credenziale federata, e ogni collegamento 
 attivo è un account in più esposto a un errore dell'IdP.
