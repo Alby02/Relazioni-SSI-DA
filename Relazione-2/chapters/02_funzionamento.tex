@@ -122,3 +122,18 @@ Come ultimo passaggio, il server dell'app verifica poi il token: Apple indica di
 Rispetto a OIDC base ci sono due caratteristiche legate alla privacy. L'utente può nascondere la propria email: in quel caso Apple genera un indirizzo di inoltro specifico per l'app e lo inserisce nel token~\cite{jain-apple-2020}. Nome ed email vengono poi consegnati all'app solo al primo accesso; il nome non è mai nel token, mentre l'email compare nel token in tutte le richieste successive~\cite{apple-request}. Secondo Jain, l'email contenuta nel token è ciò che l'app usa per far accedere l'utente~\cite{jain-apple-2020}: è il punto che il Capitolo 3 analizza.
 
 \subsection{Vantaggi e criticità dei sistemi di login federato}
+\subsection{Vantaggi e criticità dei sistemi di login federato}
+Il login federato semplifica l'accesso, ma sposta fiducia e rischio su pochi punti. Tra i vantaggi:
+\begin{itemize}
+    \item \textbf{Meno credenziali per l'utente.} NIST osserva che la federazione permette di avere meno account da usare su molti siti, senza riutilizzare lo stesso autenticatore su siti diversi~\cite[C.1]{nist800-63-3-impl}.
+    \item \textbf{Le applicazioni non gestiscono le password.} È l'obiettivo originale di OAuth: il client non conserva le credenziali dell'utente~\cite[§1, pp. 4--5; §1.3.1, p. 8]{rfc6749}.
+    \item \textbf{Meno dati verso le applicazioni.} La federazione consente di ridurre i dati esposti all'RP~\cite[§7.3]{nist800-63c-4-privacy}, come nel caso dell'email nascosta di Apple~\cite{jain-apple-2020}.
+\end{itemize}
+
+Le criticità:
+\begin{itemize}
+    \item \textbf{Tracciamento.} Se un utente usa lo stesso IdP per più siti, l'IdP può costruire un profilo delle sue attività che senza federazione non esisterebbe~\cite[§7.1]{nist800-63c-4-privacy}.
+    \item \textbf{Complessità.} Una transazione federata richiede protocolli multi-parte con caratteristiche di sicurezza e privacy sottili~\cite[§3]{nist800-63c-4-fed}.
+    \item \textbf{Come l'applicazione identifica l'utente.} Anche con un token valido, l'RP deve decidere quale informazione usare per riconoscere l'account. NIST indica che l'identificativo federato è la combinazione dell'identificativo dell'utente (\texttt{sub}) e dell'emittente (\texttt{iss}), e che l'RP non dovrebbe mai usare il primo senza considerare chi l'ha emesso~\cite[§3.4]{nist800-63c-4-fed}. Raccomanda inoltre che non contenga dati personali in chiaro come l'email, e lo richiede da FAL2 in su~\cite[§3.4]{nist800-63c-4-fed}. In concreto, molte applicazioni commettono l'errore di identificare l'utente cercando direttamente l'indirizzo email: nel caso Apple del 2020, ad essere a rischio erano proprio le applicazioni prive di misure di sicurezza aggiuntive che si affidavano a questo dato senza ulteriori verifiche~\cite{jain-apple-2020}.
+    \item \textbf{Concentrazione.} Un errore nell'IdP si propaga a tutte le applicazioni che si affidano a lui (vedi 5.3, e 4.3 per la disponibilità).
+\end{itemize}
