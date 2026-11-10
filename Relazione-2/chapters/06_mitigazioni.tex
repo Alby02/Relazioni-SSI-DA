@@ -1,60 +1,18 @@
 \section{Mitigazioni e strategie di prevenzione}
 \label{sec:mitigazioni}
 
-Le contromisure rispondono alle due debolezze viste nei Capitoli~\ref{sec:analisi-tecnica} e~\ref{sec:episodi}:
-Apple emetteva token senza legare l'email all'utente autenticato, e parte delle applicazioni si fidava dell'email contenuta nel token.
+Le contromisure devono rispondere alle due criticità emerse nei Capitoli~\ref{sec:analisi-tecnica} e~\ref{sec:episodi}: la mancata validazione dell'email lato IdP e l'uso improprio dell'email come identificativo primario lato RP.
 
-\subsection{Interventi correttivi adottati da Apple}
-
-Apple ha corretto il difetto sui propri server prima della pubblicazione del 30
-maggio 2020 e dall'analisi dei log non ha trovato
-abusi~\cite{jain-apple-2020,goodin2020}, senza però pubblicare dettagli
-tecnici~\cite{infoq2020}. La correzione, fatta lato IdP, ha protetto tutte le
-applicazioni collegate senza interventi da parte loro.
-
-\subsection{ Verifica corretta dei token e delle informazioni di identità}
-
-Il token falso superava la verifica della firma (Capitolo~\ref{sec:analisi-tecnica}), perché era stato emesso davvero da Apple. 
-Conta quindi anche quale claim l'applicazione usa per ritrovare l'account.
-OpenID Connect stabilisce che solo la coppia \texttt{sub}--\texttt{iss}
-identifica l'utente in modo stabile e che l'email non va usata come
-identificativo univoco~\cite[§5.7]{openid-connect-core}, come indica anche
-NIST~\cite[§3.4]{nist800-63c-4-fed}. Se l'account viene cercato tramite
-\texttt{sub}, l'email scritta nel token non decide più in quale account si entra.
-
-\subsection{Misure di sicurezza per Identity Provider e Service Provider}
-
-Per l'IdP il principio che mancava è che i claim di un token devono derivare
-dall'account autenticato nella sessione, non da un parametro inviato dal client,
-che l'attaccante può modificare.
-È la categoria che OWASP chiama \emph{Broken Access Control}, prima voce della Top~10 2025:
-il server riceve dal client l'identificativo di una risorsa, qui l'email, e non controlla che chi la chiede
-abbia diritto di ottenerla~\cite{owasp-top10-a01}.
-Per lo SP vale un principio complementare: secondo Jain l'attacco riusciva solo contro i servizi
-privi di misure aggiuntive~\cite{jain-apple-2020}, quindi nessun singolo claim
-ricevuto dall'IdP dovrebbe bastare da solo ad aprire un account.
-
-\subsection{Buone pratiche per sviluppatori e gestori dei servizi}
-
-Il punto più delicato del ciclo di vita dell'account è il collegamento tra un account già creato con email e
-password e un nuovo accesso con Apple: se l'applicazione unisce i due account
-solo perché l'email coincide, basta un token con l'email giusta per entrare.
-Chiedere di accedere anche con il metodo originale prima del collegamento chiude
-questa strada. Per limitare l'impatto serve inoltre una nuova autenticazione
-prima delle operazioni sensibili, come cambiare email o password o
-pagare~\cite{owasp-auth-cheatsheet}, purché passi da un canale diverso dal
-token, ad esempio un codice inviato all'indirizzo registrato: nello scenario
-Airbnb del Capitolo~\ref{sec:conseguenze} avrebbe bloccato le prenotazioni.
+\subsection{Misure per Identity Provider e Relying Party}
+Apple ha risolto la vulnerabilità lato server prima della divulgazione del maggio 2020, proteggendo immediatamente tutte le applicazioni collegate senza richiedere modifiche al loro codice~\cite{jain-apple-2020,goodin2020,infoq2020}. Sul piano architetturale:
+\begin{itemize}
+    \item \textbf{Lato IdP (prevenzione di Broken Access Control):} ogni claim inserito in un token deve essere ricavato esclusivamente dalla sessione autenticata sul server e mai accettato senza verifica da parametri forniti dal client. Tale difetto rientra nella categoria \emph{Broken Access Control}, al primo posto nella OWASP Top~10 2025~\cite{owasp-top10-a01}.
+    \item \textbf{Lato RP (verifica di \texttt{sub}--\texttt{iss} e collegamento sicuro degli account):} poiché la firma crittografica garantisce solo la provenienza del token ma non l'assenza di bug logici nell'IdP, l'RP deve identificare gli utenti tramite la coppia immutabile \texttt{sub}--\texttt{iss} anziché tramite l'indirizzo email~\cite{openid-connect-core,nist800-63c-4-fed}. Inoltre, nella fase critica di \emph{account linking} tra un profilo preesistente (creato con email e password) e un nuovo login federato con la stessa email, l'applicazione non deve unire gli account automaticamente, ma deve richiedere una verifica preliminare con le credenziali originarie. Infine, per operazioni sensibili (cambio credenziali, pagamenti) è opportuno richiedere una riautenticazione su un canale indipendente~\cite{owasp-auth-cheatsheet}.
+\end{itemize}
 
 \subsection{Comportamenti consigliati agli utenti}
-
-Contro questo difetto l'utente poteva fare poco: l'attaccante non si
-autenticava al suo posto, quindi password, Face~ID e 2FA non entravano in gioco.
-Con «Nascondi la mia email», però, Apple genera un indirizzo unico e
-casuale~\cite{apple-hide-my-email}; poiché l'attacco richiedeva l'email con cui
-la vittima era registrata nell'applicazione, un indirizzo casuale era più
-difficile da conoscere (è una nostra deduzione dal meccanismo descritto da Jain).
-Conviene inoltre revocare, dalle impostazioni dell'Apple Account, l'accesso
-delle app collegate che non si usano più~\cite{apple-manage-apps}: è l'ultima
-fase del ciclo di vita della credenziale federata, e ogni collegamento 
-attivo è un account in più esposto a un errore dell'IdP.
+Poiché l'attacco avveniva interamente tra l'attaccante e i server di Apple, le difese tradizionali dell'utente (password robusta, Face~ID, 2FA) non venivano interpellate. Tuttavia, due buone pratiche riducono l'esposizione a difetti simili nel ciclo di vita dell'account:
+\begin{itemize}
+    \item \textbf{Utilizzare «Nascondi la mia email»:} questa funzione genera un indirizzo \emph{relay} casuale e univoco per ogni app~\cite{apple-hide-my-email}. Poiché l'exploit di Jain richiedeva di conoscere l'indirizzo email associato all'account della vittima sul servizio terzo, un indirizzo pseudonimo e non pubblico ostacola significativamente la riuscita dell'attacco.
+    \item \textbf{Revocare periodicamente gli accessi inutilizzati:} rimuovere dalle impostazioni dell'Apple Account le applicazioni che non si usano più~\cite{apple-manage-apps} riduce il numero di servizi esposti in caso di vulnerabilità future dell'IdP.
+\end{itemize}

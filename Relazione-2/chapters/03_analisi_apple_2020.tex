@@ -4,16 +4,16 @@
 \subsection{Presentazione del caso e contesto della scoperta}
 Nell'aprile 2020 il ricercatore di sicurezza indipendente Bhavuk Jain individuò
 una grave vulnerabilità nel servizio \emph{Sign in with Apple}, introdotto da
-Apple nel 2019 insieme a iOS~13. Il difetto fu segnalato ad Apple attraverso
-l'\emph{Apple Security Bounty}~\cite{apple-bounty-2019} e successivamente rilasciato
-la notizia al pubblico il 30 maggio 2020, a problema risolto~\cite{jain-apple-2020}.
+Apple nel 2019 insieme a iOS~13~\cite{apple-ios13-2019}. Il difetto fu segnalato ad Apple attraverso
+l'\emph{Apple Security Bounty}~\cite{apple-bounty-2019} e la notizia fu resa
+pubblica il 30 maggio 2020, a problema risolto~\cite{jain-apple-2020}.
 Alla segnalazione è seguita una ricompensa di 100.000 dollari, e Apple ha dichiarato
 di aver analizzato i propri log senza riscontrare abusi o compromissioni di
 account legate alla vulnerabilità~\cite{jain-apple-2020,goodin2020}.
 
 Il caso è particolarmente significativo perché il difetto non riguardava
 un'applicazione di terze parti, ma direttamente l'\emph{Identity Provider}:
-ossia nel componente su cui tutte le applicazioni aderenti al servizio basano
+ossia il componente su cui tutte le applicazioni aderenti al servizio basano
 la propria fiducia.
 
 \subsection{Descrizione della vulnerabilità individuata}
@@ -26,9 +26,9 @@ l'appartenenza di quell'email a chi presentava il token. Poiché la firma era
 autentica, il token risultava indistinguibile da uno emesso legittimamente.
 
 Il risultato era che un attaccante poteva generare, senza conoscere alcuna
-password, un token di identità riferita all'account della vittima.
+password, un token di identità riferito all'account della vittima.
 Il ricercatore precisa che l'attacco funzionava a prescindere dal fatto che
-l'indirizzo email indicato fosse associato a un Apple ID valido o meno ~\cite{jain-apple-2020}.
+l'indirizzo email indicato fosse associato a un Apple ID valido o meno~\cite{jain-apple-2020}.
 
 \subsection{Analisi tecnica del meccanismo di attacco}
 Il flusso legittimo di \emph{Sign in with Apple} è simile a OAuth~2.0: l'utente
@@ -39,8 +39,8 @@ l'identificativo dell'utente e l'email~\cite{apple-authentication,jain-apple-202
 
 Nel passaggio in cui veniva richiesto il token, la richiesta inviata ad Apple
 includeva un campo con l'indirizzo email. Il problema consisteva nel fatto che
-Apple non verificasse che tale valore corrispondesse all'utente effettivamente
-autenticato nella sessione, e di conseguenza firmava il token con email della vittima.
+Apple non verificava che tale valore corrispondesse all'utente effettivamente
+autenticato nella sessione, e di conseguenza firmava il token con l'email della vittima.
 L'attacco si articolava quindi in tre passi~\cite{jain-apple-2020}:
 
 \begin{enumerate}
@@ -70,7 +70,7 @@ Gli elementi coinvolti nel processo sono i seguenti~\cite{apple-authentication,a
     \item \textbf{ID Token}: token in formato JWT~\cite{rfc7519}, composto da
     intestazione, \emph{payload} e firma. Il \emph{payload} contiene i
     \emph{claim} sull'utente, tra cui l'emittente (\texttt{iss}, ovvero
-    \texttt{https://appleid.apple.com}), il destinatario (\texttt{aud}, cioè
+    \url{https://appleid.apple.com}), il destinatario (\texttt{aud}, cioè
     l'identificativo dell'applicazione), la scadenza (\texttt{exp}), l'identificativo
     univoco dell'utente (\texttt{sub}) e l'indirizzo email con il relativo stato
     di verifica (\texttt{email}, \texttt{email\_verified});

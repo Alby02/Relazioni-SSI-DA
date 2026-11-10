@@ -1,68 +1,40 @@
 \section{Conseguenze e impatti del caso}
 \label{sec:conseguenze}
-\subsection{Possibili scenari di compromissione e conseguenze}
-Se questo bug non fosse stato scoperto e corretto in tempo, un attaccante avrebbe potuto sfruttarlo per compromettere gli account degli utenti su alcuni servizi di terze parti, venendo riconosciuto come utente legittimo.
-Tra i servizi potenzialmente esposti alla vulnerabilità, lo stesso Bhavuk Jain cita Dropbox e Airbnb (pur precisando di non averne verificato l'effettiva vulnerabilità), per i quali è possibile ipotizzare diversi scenari di compromissione. \cite{jain-apple-2020}
 
-Nel caso di Dropbox, un attaccante che fosse riuscito ad accedere all'account della vittima avrebbe potuto consultare e modificare file e documenti personali.
-Tra questi sarebbero potuti esserci documenti contenenti informazioni sensibili, come dati finanziari, documenti d'identità o credenziali di accesso ad altri servizi.
-Un possibile scenario riguarda un piccolo imprenditore che utilizza Dropbox per archiviare i documenti della propria azienda e Sign in with Apple per autenticarsi rapidamente. Un eventuale accesso non autorizzato avrebbe potuto compromettere la riservatezza delle informazioni aziendali, che sarebbero potute essere divulgate online o utilizzate per ricattare la vittima.
-
-Come conseguenza secondaria, qualora tra i dati sottratti fossero presenti password conservate in chiaro, l'attaccante avrebbe potuto utilizzarle per tentare di compromettere ulteriori account della vittima, come quelli dei social network o della posta elettronica.
-Nei casi più gravi, avrebbe potuto impersonare la vittima per truffare amici e conoscenti, richiedendo denaro con falsi pretesti. Un esempio reale di questa tipologia di frode è stato documentato dalla City of London Police nel 2021, quando un account Facebook compromesso è stato utilizzato per convincere gli amici del proprietario a trasferire denaro su un conto PayPal controllato dai truffatori. \cite{city-police-2021}
-
-Nel caso di Airbnb, invece, un attaccante avrebbe potuto consultare informazioni personali e dettagli delle prenotazioni della vittima e, in assenza di ulteriori controlli di sicurezza, effettuare prenotazioni a suo nome utilizzando eventualmente i metodi di pagamento associati all'account.
+\subsection{Scenari applicativi di compromissione}
+Sebbene non siano stati riscontrati attacchi reali prima della patch~\cite{jain-apple-2020}, l'impatto potenziale può essere compreso analizzando alcuni servizi che integravano \emph{Sign in with Apple}, come Dropbox e Airbnb (citati a titolo esemplificativo da Jain~\cite{jain-apple-2020}):
+\begin{itemize}
+    \item \textbf{Archiviazione cloud (es. Dropbox):} un attaccante avrebbe potuto accedere a documenti riservati, dati finanziari o aziendali, con rischi di furto intellettuale o estorsione. Inoltre, l'eventuale presenza di file contenenti altre credenziali in chiaro avrebbe innescato compromissioni a catena su posta elettronica e social network, abilitando frodi per impersonificazione verso contatti e conoscenti (come nei casi documentati dalla City of London Police, in cui account social violati sono stati usati per richiedere denaro su conti PayPal dei truffatori~\cite{city-police-2021}, Figura~\ref{fig:furto-identita-digitale}).
+    \item \textbf{Servizi con pagamenti integrati (es. Airbnb):} oltre alla violazione della privacy su viaggi e spostamenti, l'attaccante avrebbe potuto effettuare prenotazioni fraudolente sfruttando i metodi di pagamento già collegati all'account della vittima.
+\end{itemize}
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=1\textwidth]{foto_rel_2.png}
-    \caption{Caso documentato di frode tramite impersonificazione digitale}
+    \includegraphics[width=0.90\textwidth]{foto_rel_2.png}
+    \caption{Caso documentato di frode tramite impersonificazione digitale.}
     {\footnotesize Fonte: \cite{city-police-2021}\par}
     \label{fig:furto-identita-digitale}
 \end{figure}
-\newpage
-\subsection{Implicazioni per la fiducia nei servizi Apple e nei sistemi federati}
-Fin dalla sua presentazione nel 2019, Sign in with Apple è stato promosso da Apple come un sistema di autenticazione progettato per garantire maggiore sicurezza e riservatezza agli utenti. La tutela della privacy era uno dei punti cardine su cui l'azienda aveva puntato con l'introduzione di iOS 13.
-La scoperta di una vulnerabilità critica proprio in questo servizio avrebbe quindi potuto compromettere gravemente la fiducia degli utenti, mettendo in discussione l'affidabilità delle misure di sicurezza adottate dall'azienda.
-Tra i principali vantaggi evidenziati figuravano la possibilità di nascondere il proprio indirizzo email e l'uso dell'autenticazione a due fattori. \cite{apple-ios13-2019}
+
+\subsection{Impatti economici, reputazionali e legali}
+Grazie alla segnalazione responsabile, il costo economico diretto per Apple si è limitato al premio di 100.000 dollari erogato tramite il programma di \emph{bug bounty}~\cite{apple-bounty-2019,jain-apple-2020}. Uno sfruttamento su larga scala avrebbe invece comportato conseguenze ben più gravi:
+\begin{itemize}
+    \item \textbf{Danno reputazionale e di fiducia:} Apple aveva promosso \emph{Sign in with Apple} come alternativa sicura e orientata alla privacy rispetto ai social login concorrenti~\cite{apple-ios13-2019} (Figura~\ref{fig:sign-in-apple}). Una violazione massiva avrebbe minato la credibilità dell'intero ecosistema Apple e la fiducia nel modello federato~\cite{nist800-63c}.
+    \item \textbf{Costi di data breach e sanzioni legali:} secondo il report \emph{Cost of a Data Breach 2025} di IBM, il costo medio globale di una violazione dei dati supera i 4 milioni di dollari~\cite{ibm-data-breach} (Figura~\ref{fig:violazione-ibm}). Inoltre, in ambito europeo il GDPR impone severi obblighi di notifica delle violazioni dei dati personali alle autorità (Garante) e agli interessati, con pesanti sanzioni amministrative e richieste di risarcimento in caso di inadempienza~\cite{garante-data-breach}.
+\end{itemize}
+
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.70\textwidth]{Sign_in_Apple.png}
-    \caption{Presentazione delle caratteristiche di Sign in with Apple}
+    \includegraphics[width=0.65\textwidth]{Sign_in_Apple.png}
+    \caption{Presentazione delle caratteristiche di Sign in with Apple.}
     {\footnotesize Fonte: \cite{apple-ios13-2019}\par}
     \label{fig:sign-in-apple}
 \end{figure}
-Il funzionamento di Sign in with Apple si basa su un sistema di autenticazione federata che, come descritto dal NIST, permette agli utenti di accedere a servizi di terze parti affidando la verifica della propria identità a un Identity Provider (IdP), in questo caso Apple stessa.
-Questo sistema offre quindi maggiore comodità e rapidità, poiché consente il login senza dover creare e ricordare credenziali differenti per ciascun servizio.
-Tuttavia, questa centralizzazione introduce dei rischi: una vulnerabilità presente nell'IdP può avere ripercussioni sui servizi che si affidano a esso, qualora questi non adottino ulteriori misure di sicurezza.
-\cite{nist800-63c,apple-authentication}
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=0.60\textwidth]{appleID.png}
-    \caption{Schema di autenticazione tramite Apple ID.}
-    {\footnotesize Fonte: \cite{apple-authentication}\par}
-    \label{fig:apple-id}
-\end{figure}
-
-\subsection{Impatti economici, reputazionali e legali}
-Dal punto di vista economico, la vulnerabilità non sembra aver avuto conseguenze significative documentate per l'azienda, poiché è stata individuata e corretta senza evidenze di un suo sfruttamento.
-Un eventuale sfruttamento avrebbe invece potuto provocare ingenti danni sia economici che reputazionali, con possibili ripercussioni anche sul valore delle azioni in borsa.
-L'unica spesa pubblicamente quantificata riguarda la ricompensa riconosciuta al ricercatore attraverso il programma Apple bug bounty. 
-Questo programma prevede compensi economici per coloro che individuano e segnalano vulnerabilità nei sistemi Apple, con importi variabili in base alla gravità del problema riscontrato.
-Nel caso di Sign in with Apple, considerata come critica la classificazione della vulnerabilità, al ricercatore è stato riconosciuto un compenso pari a 100.000 dollari. 
-\cite{jain-apple-2020}
-
-Dal punto di vista legale, nell'Unione europea il GDPR prevede specifici obblighi di notifica delle violazioni dei dati personali alle autorità competenti e, nei casi previsti, anche agli utenti interessati. \cite{garante-data-breach}
-Qualora fossero state accertate violazioni della normativa, le aziende avrebbero potuto essere soggette a sanzioni amministrative o richieste di risarcimento, oltre alla perdita di fiducia degli utenti, con possibile calo delle vendite di prodotti.
-Per comprendere l'entità dei costi, è possibile fare riferimento al report Cost of a Data Breach 2025 di IBM, secondo cui il costo medio globale di un data breach supera i 4 milioni di dollari. \cite{ibm-data-breach}
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.90\textwidth]{violazioneIBM.png}
-    \caption{Principali categorie di costo di un
-data breach secondo IBM (2025).}
+    \includegraphics[width=0.80\textwidth]{violazioneIBM.png}
+    \caption{Principali categorie di costo di un data breach secondo IBM (2025).}
     {\footnotesize Fonte: \cite{ibm-data-breach}\par}
     \label{fig:violazione-ibm}
 \end{figure}
-
-
