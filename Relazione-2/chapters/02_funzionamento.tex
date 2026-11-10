@@ -58,7 +58,67 @@ del token prima di concedere l'accesso al proprio
 servizio~\cite{nist800-63c,owasp-auth-cheatsheet}.
 
 \subsection{Funzionamento dei protocolli OAuth 2.0 e OpenID Connect}
+Il login federato descritto nelle sezioni precedenti si realizza spesso con due protocolli standard: OAuth 2.0 e OpenID Connect (OIDC).
 
-\subsection{Il sistema Sign in with Apple: architettura e modalità di autenticazione}
+\subsubsection*{OAuth 2.0: delegare l'accesso}
+OAuth 2.0 nasce per un problema di autorizzazione, non di autenticazione: permettere a un'applicazione di terze parti di accedere a una risorsa dell'utente senza che l'utente le consegni la propria password~\cite[§1, p. 5]{rfc6749}\cite[§1]{openid-connect-core}. Prima di OAuth, per dare questo accesso il resource owner condivideva le proprie credenziali con la terza parte, e ne derivavano diversi problemi~\cite[§1, pp. 4--5]{rfc6749}:
+\begin{itemize}
+    \item la terza parte deve conservare la password, di solito in chiaro;
+    \item i server devono continuare a supportare l'autenticazione con password, nonostante i suoi limiti;
+    \item l'accesso concesso è troppo ampio e senza limiti di durata;
+    \item l'utente non può revocare l'accesso a una singola terza parte senza revocarlo a tutte (cambiando la password);
+    \item la compromissione di una sola applicazione espone la password dell'utente e tutti i dati che essa protegge.
+\end{itemize}
+
+OAuth risolve il problema separando il ruolo del client da quello del resource owner: al posto delle credenziali dell'utente, il client ottiene un access token, una stringa che indica uno scope, una durata e altri attributi di accesso~\cite[§1, p. 5]{rfc6749}. Lo standard definisce quattro ruoli~\cite[§1.1, p. 6]{rfc6749}:
+\begin{itemize}
+    \item \textbf{resource owner:} chi può concedere l'accesso a una risorsa protetta (l'utente);
+    \item \textbf{client:} l'applicazione che richiede le risorse per conto del resource owner e con la sua autorizzazione;
+    \item \textbf{authorization server:} il server che emette gli access token dopo aver autenticato il resource owner e ottenuto l'autorizzazione;
+    \item \textbf{resource server:} il server che ospita le risorse protette.
+\end{itemize}
+
+Il flusso più usato e che descriviamo è l'Authorization Code, che si svolge in questi passaggi~\cite{rfc6749}:
+\begin{enumerate}
+    \item L'utente sceglie ``Accedi con\dots'' sull'applicazione (il client), che reindirizza il suo browser all'authorization server indicando chi è (il proprio client identifier), quale accesso chiede (scope) e dove tornare (redirect URI).
+    \item L'authorization server autentica l'utente e stabilisce se concede l'accesso. Le credenziali dell'utente restano all'authorization server e non arrivano mai al client~\cite[§1.3.1, p. 8]{rfc6749}.
+    \item Se l'accesso è concesso, l'authorization server rimanda il browser al client con un authorization code, un codice temporaneo che può essere usato una sola volta~\cite[§4.1.2, pp. 26--27]{rfc6749}.
+    \item Il client presenta il codice direttamente al token endpoint dell'authorization server, autenticandosi e indicando lo stesso redirect URI. L'authorization server autentica il client, valida il code, controlla il redirect URI e risponde con l'access token ed eventualmente un refresh token.
+\end{enumerate}
+
+Il vantaggio è che il token arriva al client senza passare dal browser, dove potrebbe essere esposto~\cite[§1.3.1, p. 8]{rfc6749}: il browser vede solo il codice.
+
+La RFC 6749 è del 2012. La Best Current Practice RFC 9700 (2025), che la aggiorna~\cite[Abstract]{rfc9700}, preferisce questo flusso al flusso implicit~\cite[§2.1.2]{rfc9700}. Nell'implicit il token è consegnato nell'URL di reindirizzamento~\cite[§4.2, p. 31]{rfc6749} e può essere esposto all'utente o ad altre applicazioni con accesso al browser~\cite[§1.3.2, p. 9]{rfc6749}. Con l'Authorization Code, invece, i token non compaiono negli URL e il server può rilevare i tentativi di replay~\cite[§2.1.2]{rfc9700} e la RFC 9700 richiede inoltre PKCE, che impedisce di riutilizzare un codice intercettato~\cite[§2.1.1; §4.5.3.1]{rfc9700}.
+
+\subsubsection*{OpenID Connect: aggiungere l'identità}
+OAuth 2.0 è un protocollo di autorizzazione: stabilisce che cosa un'applicazione può fare su una risorsa, ma non fornisce metodi standard per comunicare l'identità dell'utente~\cite[§1]{openid-connect-core}. La parte di autenticazione costruita sull'infrastruttura di OAuth 2.0 è OpenID Connect, che permette al client di verificare l'identità dell'utente in base all'autenticazione svolta dall'authorization server~\cite[§1]{openid-connect-core}.
+
+OIDC realizza quindi l'autenticazione federata descritta in 2.1 e 2.2: l'identità e l'autenticazione dell'utente restano all'Identity Provider, e l'applicazione si affida al risultato. I ruoli sono gli stessi di OAuth, con nomi diversi: l'authorization server prende il nome di OpenID Provider (OP) e svolge il ruolo di IdP, mentre il client prende il nome di Relying Party (RP) e corrisponde allo SP descritto in 2.2. L'OP è un authorization server capace di autenticare l'utente e di fornire all'RP claim sull'autenticazione e sull'utente~\cite[§1.2]{openid-connect-core}; l'RP è chiamato così perché si affida (relies) al risultato dell'autenticazione che riceve~\cite[§3]{openid-connect-core}.
+
+Il flusso è lo stesso di OAuth, ma la richiesta include lo scope openid~\cite[§3.1.2.1]{openid-connect-core}, con cui il client chiede di usare OIDC~\cite[§1]{openid-connect-core}, e oltre all'access token l'OP restituisce un ID Token~\cite[§3.1.3.3]{openid-connect-core}. L'ID Token è un JWT (JSON Web Token) firmato digitalmente~\cite[§2]{openid-connect-core} che contiene dei claim, cioè informazioni dichiarate su un'entità, qui sull'utente e sull'autenticazione appena avvenuta~\cite[§1.2]{openid-connect-core}. I claim obbligatori sono~\cite[§2]{openid-connect-core}:
+\begin{itemize}
+    \item \textbf{iss:} l'emittente, un URL \url{https};
+    \item \textbf{sub:} l'identificativo dell'utente, unico presso quell'emittente;
+    \item \textbf{aud:} i destinatari del token, che devono includere il \texttt{client\_id} dell'applicazione;
+    \item \textbf{exp:} la scadenza;
+    \item \textbf{iat:} il momento di emissione.
+\end{itemize}
+
+Tra i claim facoltativi c'è il nonce, un valore che associa la sessione del client all'ID Token ed è un controllo contro il replay: se il client lo ha inviato, il server deve restituirlo e il client deve verificarlo~\cite[§2]{openid-connect-core}. Nel flusso Authorization Code, però, l'invio nella richiesta è opzionale~\cite[§3.1.2.1]{openid-connect-core}.
+
+Ricevuto l'ID Token, l'RP non deve fidarsene a priori. Deve controllare che l'emittente coincida con \texttt{iss}, che il proprio \texttt{client\_id} compaia in \texttt{aud}, che la firma sia valida con le chiavi fornite dall'emittente (se il token arriva direttamente dal token endpoint, la verifica TLS del server può sostituire quella della firma), che l'ora attuale preceda \texttt{exp} e che il nonce, se inviato, coincida con quello della richiesta~\cite[§3.1.3.7]{openid-connect-core}. Questi controlli sono la parte di responsabilità dello SP anticipata in 2.2.
+
+OIDC prevede anche una variante, il flusso ibrido, in cui una parte dei token è restituita già nella risposta di autorizzazione e il resto dal token endpoint~\cite[§3.3]{openid-connect-core}. Con \texttt{response\_type=code id\_token} arrivano insieme il code e un ID Token~\cite[§3.3.2.5]{openid-connect-core}, e in questo caso il nonce è obbligatorio~\cite[§3.3.2.1]{openid-connect-core}.
+
+\subsection{Sign in with Apple: architettura e modalità di autenticazione}
+Sign in with Apple permette di accedere ad app e siti di terze parti con il proprio Apple Account. Secondo il ricercatore Jain che nel 2020 ne scoprì la vulnerabilità, funziona in modo simile a OAuth 2.0~\cite{jain-apple-2020}: Apple è l'IdP (in OIDC, l'OP) e l'app o il sito è lo SP (l'RP).
+
+L'app avvia una sessione di autenticazione con il proprio server, la associa all'ID token tramite un nonce e può chiedere informazioni sull'utente, come nome ed email~\cite{apple-authentication}. L'utente si autentica con il proprio Apple Account: sui dispositivi Apple con Face ID, Touch ID o passcode (o con la password dell'account se il passcode non è impostato), sugli altri dispositivi con password e codice a due fattori~\cite{apple-authentication}. Se l'autenticazione riesce, Apple restituisce all'app un identity token in formato JWT, un authorization code monouso e un identificativo utente~\cite{apple-authentication}.
+
+La documentazione di Apple per l'autorizzazione tramite REST API prevede che si possa chiedere solo il \texttt{code}, oppure \texttt{code} e \texttt{id\_token} insieme (chiedere solo \texttt{id\_token} non è supportato)~\cite{apple-request}. Nell'esempio pubblicato da Apple si chiedono entrambi: l'ID Token arriva così già nella risposta di autorizzazione, insieme al code monouso~\cite{apple-request}; nei termini di OIDC è il flusso ibrido~\cite[§3.3]{openid-connect-core}, una variante di quello visto in 2.3.
+
+Come ultimo passaggio, il server dell'app verifica poi il token: Apple indica di controllare la firma con la chiave pubblica di Apple, il nonce, che \texttt{iss} sia \url{https://appleid.apple.com}, che \texttt{aud} coincida con il \texttt{client\_id} dello sviluppatore e che l'ora preceda \texttt{exp}~\cite{apple-verifying-user}. Se i controlli riescono, l'app fa entrare l'utente.
+
+Rispetto a OIDC base ci sono due caratteristiche legate alla privacy. L'utente può nascondere la propria email: in quel caso Apple genera un indirizzo di inoltro specifico per l'app e lo inserisce nel token~\cite{jain-apple-2020}. Nome ed email vengono poi consegnati all'app solo al primo accesso; il nome non è mai nel token, mentre l'email compare nel token in tutte le richieste successive~\cite{apple-request}. Secondo Jain, l'email contenuta nel token è ciò che l'app usa per far accedere l'utente~\cite{jain-apple-2020}: è il punto che il Capitolo 3 analizza.
 
 \subsection{Vantaggi e criticità dei sistemi di login federato}
