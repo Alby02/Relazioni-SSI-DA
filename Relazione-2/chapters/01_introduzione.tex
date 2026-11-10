@@ -1,46 +1,9 @@
 \section{Introduzione}
 \label{sec:introduzione}
 
-L'autenticazione digitale rappresenta il primo livello di difesa per proteggere
-l'accesso agli account personali e alle risorse informatiche. Con la crescita
-dei servizi online, i meccanismi utilizzati per verificare l'identità degli
-utenti sono cambiati profondamente, passando da credenziali gestite
-singolarmente da ogni sito a sistemi centralizzati che permettono di accedere a
-più applicazioni tramite un unico account.
+L'autenticazione digitale costituisce il primo livello di difesa per proteggere l'accesso agli account personali e alle risorse informatiche. Con la crescita dei servizi online, i meccanismi di verifica dell'identità sono passati da credenziali gestite singolarmente da ogni sito a sistemi centralizzati basati su un unico account.
 
-\subsection{Evoluzione dei sistemi di autenticazione digitale}
-Per molto tempo il modello standard di autenticazione sul web si è basato quasi
-esclusivamente sulla coppia \emph{username} e \emph{password} gestita
-localmente da ciascun servizio. Con l'aumento del numero di piattaforme
-utilizzate ogni giorno dagli utenti, questo approccio ha però mostrato limiti
-evidenti sia dal punto di vista dell'usabilità sia da quello della sicurezza.
+\subsection{Limiti delle password e nascita del login federato}
+Per lungo tempo l'autenticazione sul web si è basata quasi esclusivamente sulla coppia \emph{username} e \emph{password} gestita localmente da ciascun servizio. Con la moltiplicazione delle piattaforme utilizzate quotidianamente, questo approccio ha mostrato limiti evidenti di usabilità e sicurezza. Ricordare decine di credenziali complesse induce spesso gli utenti a scegliere password deboli o a riutilizzarle su più siti~\cite{nist800-63b}: la compromissione di un singolo servizio tramite \emph{data breach} espone così gli account dell'utente su altre piattaforme a campagne automatizzate di \emph{credential stuffing}. Inoltre, per i gestori delle applicazioni, custodire internamente i database delle credenziali comporta costi e responsabilità rilevanti.
 
-Ricordare decine di credenziali diverse e complesse è infatti difficile per un
-utente medio, e questo porta spesso a comportamenti rischiosi come la scelta di
-password deboli o il riutilizzo della stessa password su più
-siti~\cite{nist800-63b}. Di conseguenza, la compromissione di un singolo
-servizio tramite un \emph{data breach} può esporre gli account dello stesso
-utente su altre piattaforme, favorendo attacchi automatizzati come il
-\emph{credential stuffing}. Anche per chi gestisce le applicazioni, conservare
-e proteggere internamente i database delle credenziali comporta costi e
-responsabilità rilevanti. Per ridurre questi rischi si sono progressivamente
-diffusi meccanismi di autenticazione a più fattori (MFA) e modelli basati sulla
-delega dell'autenticazione a fornitori esterni.
-
-\subsection{Nascita e diffusione del login federato}
-Per superare la frammentazione degli account è nato il modello del
-\textbf{login federato}. Inizialmente adottato soprattutto in ambito aziendale
-e universitario (ad esempio attraverso lo standard SAML o infrastrutture come
-\texttt{eduroam}) per consentire l'accesso a servizi condivisi tra enti
-diversi, questo approccio si è poi diffuso su larga scala anche nel web
-consumer grazie ai cosiddetti \emph{social login}, come «Accedi con Google»,
-«Accedi con Facebook» o «Sign in with Apple»~\cite{nist800-63c}.
-
-Il login federato permette all'utente di sfruttare un'identità digitale già
-esistente presso un fornitore principale per autenticarsi su applicazioni di
-terze parti, senza dover creare e ricordare una nuova password per ogni
-servizio. Questo migliora notevolmente l'esperienza d'uso, specialmente sui
-dispositivi mobili, e permette alle applicazioni di appoggiarsi a grandi
-provider che dispongono già di infrastrutture di sicurezza avanzate e di MFA.
-Allo stesso tempo, però, concentrare l'autenticazione su pochi fornitori sposta
-la superficie d'attacco sulla corretta comunicazione tra i sistemi coinvolti.
+Per superare questa frammentazione si è affermato il modello del \textbf{login federato}. Nato in ambito aziendale e accademico (ad esempio con lo standard SAML o infrastrutture come \texttt{eduroam}), si è poi diffuso nel web consumer attraverso i \emph{social login} come «Accedi con Google», «Accedi con Facebook» e «Sign in with Apple»~\cite{nist800-63c}. Il login federato consente di sfruttare un'identità digitale già esistente presso un fornitore principale per autenticarsi su applicazioni di terze parti senza creare nuove password, migliorando l'usabilità (soprattutto su dispositivi mobili) e delegando la sicurezza a provider dotati di infrastrutture avanzate e autenticazione a più fattori (MFA). Tuttavia, concentrare l'autenticazione su pochi fornitori sposta la superficie d'attacco sulla corretta verifica delle attestazioni scambiate tra i sistemi coinvolti, come dimostra la vulnerabilità scoperta nel 2020 in \emph{Sign in with Apple} analizzata in questa relazione.

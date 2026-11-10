@@ -1,98 +1,30 @@
 \section{Il login federato: funzionamento e caratteristiche}
 \label{sec:contesto}
 
-Per comprendere come possa verificarsi una vulnerabilità in un sistema di login
-federato, è necessario chiarire prima quali sono i concetti su cui si fonda
-questo modello e quali compiti spettano alle diverse entità coinvolte nel
-processo di accesso.
+\subsection{Autenticazione federata e attori coinvolti}
+Secondo le linee guida del NIST (SP~800-63C), l'\textbf{autenticazione federata} (\emph{Federated Identity}) consente di trasmettere l'identità autenticata di un utente e i relativi attributi (\emph{claim}) attraverso domini di sicurezza distinti~\cite{nist800-63c}. A differenza del \textbf{Single Sign-On (SSO)} tradizionale, che permette di accedere a più risorse con un'unica sessione ma tipicamente dentro i confini di una singola organizzazione, la federazione estende questo principio tra enti indipendenti basandosi su rapporti di fiducia (\emph{trust}) e sullo scambio di attestazioni crittografiche (\emph{token})~\cite{nist800-63c,openid-connect-core}.
 
-\subsection{Definizione di autenticazione federata e Single Sign-On (SSO)}
-Secondo le linee guida del NIST (SP~800-63C), l'\textbf{autenticazione
-federata} (\emph{Federated Identity}) è un meccanismo che consente di
-trasmettere l'identità autenticata di un utente e i relativi attributi
-(\emph{claim}) attraverso domini di sicurezza distinti~\cite{nist800-63c}. In
-altre parole, un servizio esterno accetta il risultato di un'autenticazione
-svolta da un altro soggetto fidato, senza dover verificare in prima persona le
-credenziali primarie dell'utente.
-
-Nel linguaggio comune i termini autenticazione federata e \textbf{Single
-Sign-On (SSO)} vengono spesso sovrapposti, ma indicano due concetti non
-identici. Il \emph{Single Sign-On} è la funzionalità che permette a un utente,
-dopo essersi autenticato una sola volta, di accedere a più applicazioni o
-risorse all'interno della stessa sessione senza dover reinserire le
-credenziali, tipicamente però dentro i confini di una singola organizzazione
-(ad esempio i vari portali interni di un'azienda). L'autenticazione federata
-estende invece questo principio tra organizzazioni e domini completamente
-indipendenti tra loro, basandosi su rapporti di fiducia (\emph{trust}) e sullo
-scambio di attestazioni crittografiche
-(\emph{token})~\cite{nist800-63c,openid-connect-core}.
-
-\subsection{Ruolo dell'Identity Provider (IdP) e del Service Provider (SP)}
-Il funzionamento del login federato si basa sulla separazione tra chi verifica
-l'identità dell'utente e chi eroga il servizio finale. Gli attori principali
-coinvolti, oltre all'utente, sono due~\cite{nist800-63c,openid-connect-core}:
-
+Il modello separa chi verifica l'identità da chi eroga il servizio finale, coinvolgendo due attori principali oltre all'utente~\cite{nist800-63c,openid-connect-core}:
 \begin{itemize}
-    \item \textbf{Identity Provider (IdP):} è il fornitore che gestisce
-    l'identità digitale dell'utente (ad esempio Apple, Google o Microsoft).
-    L'IdP ha il compito di registrare l'utente, custodire le sue credenziali o
-    fattori di autenticazione (password, dati biometrici locali tramite
-    Face~ID/Touch~ID, codici MFA) ed eseguire materialmente il riconoscimento.
-    Una volta verificata l'identità, l'IdP genera e firma digitalmente un token
-    (ad esempio un \emph{ID Token} in formato JWT) che contiene i \emph{claim}
-    sull'utente, come l'identificativo univoco dell'account e l'indirizzo
-    email;
-    \item \textbf{Service Provider (SP)}, indicato anche come \textbf{Relying
-    Party (RP)} nello standard OpenID Connect e nei documenti NIST: è
-    l'applicazione o il sito web di terze parti a cui l'utente vuole accedere.
-    Lo SP non conosce né memorizza la password dell'utente, ma delega il
-    controllo all'IdP e si affida (\emph{relies on}) al token ricevuto per
-    identificare l'utente e autorizzare la sessione di accesso.
+    \item \textbf{Identity Provider (IdP):} il fornitore che gestisce l'identità digitale dell'utente (es. Apple, Google). Custodisce le credenziali e i fattori di autenticazione (password, Face~ID/Touch~ID, MFA), esegue il riconoscimento ed emette un token firmato digitalmente (es. un \emph{ID Token} in formato JWT) contenente i \emph{claim} sull'utente;
+    \item \textbf{Service Provider (SP)} o \textbf{Relying Party (RP)}: l'applicazione o sito di terze parti a cui l'utente vuole accedere. Non conosce né memorizza la password dell'utente, ma delega la verifica all'IdP e si affida (\emph{relies on}) al token ricevuto per autorizzare la sessione.
 \end{itemize}
+Questa delega ripartisce le responsabilità: l'IdP deve emettere il token solo dopo aver verificato l'utente legittimo, mentre l'RP deve validarne rigorosamente firma e parametri prima di concedere l'accesso~\cite{nist800-63c,owasp-auth-cheatsheet}.
 
-Questo modello di delega introduce una precisa ripartizione delle
-responsabilità: l'IdP deve garantire che il token venga emesso solo a seguito
-di una verifica corretta dell'utente a cui appartiene l'identità, mentre lo SP
-ha il compito di validare rigorosamente l'autenticità, la firma e i parametri
-del token prima di concedere l'accesso al proprio
-servizio~\cite{nist800-63c,owasp-auth-cheatsheet}.
+\subsection{Protocolli OAuth 2.0 e OpenID Connect}
+Il login federato moderno si basa sugli standard OAuth~2.0 e OpenID Connect (OIDC)~\cite[§1]{rfc9700}. \textbf{OAuth~2.0} è un framework di autorizzazione che consente a un'applicazione (\emph{client}) di accedere a risorse protette per conto dell'utente (\emph{resource owner}) ottenendo dall'\emph{authorization server} un \emph{access token} anziché la password~\cite[§1, pp. 5--6]{rfc6749}. Poiché OAuth~2.0 non comunica l'identità dell'utente, sopra di esso è stato costruito \textbf{OpenID Connect (OIDC)}, in cui l'authorization server opera come \emph{OpenID Provider} (IdP) e il client come \emph{Relying Party} (RP)~\cite[§1, §1.2]{openid-connect-core}.
 
-\subsection{Funzionamento dei protocolli OAuth 2.0 e OpenID Connect}
-Il login federato si realizza spesso con due protocolli standard: OAuth 2.0 e OpenID Connect (OIDC)~\cite[§1]{rfc9700}.
-
-\subsubsection*{OAuth 2.0: delegare l'accesso}
-OAuth 2.0 permette a un'applicazione di terze parti di accedere a una risorsa dell'utente senza che questi le consegni la propria password~\cite[§1, p. 5]{rfc6749}. Al posto delle credenziali, il client ottiene un \emph{access token}, una stringa che indica scope, durata e altri attributi dell'accesso~\cite[§1, p. 5]{rfc6749}. Non è però un protocollo di autenticazione: non fornisce metodi standard per comunicare l'identità dell'utente~\cite[§1]{openid-connect-core}. Lo standard prevede quattro ruoli: il \emph{resource owner} (l'utente), il \emph{client} (l'applicazione), l'\emph{authorization server} (emette i token dopo aver autenticato l'utente) e il \emph{resource server} (ospita le risorse protette)~\cite[§1.1, p. 6]{rfc6749}.
-
-Il flusso \emph{Authorization Code} si svolge in quattro passaggi~\cite[§4.1, p. 25]{rfc6749}:
+Nel flusso standard \emph{Authorization Code} con scope \texttt{openid}~\cite[§4.1]{rfc6749}, \cite[§3.1]{openid-connect-core}:
 \begin{enumerate}
-    \item L'utente sceglie ``Accedi con\dots'' sull'applicazione (il client), che manda il suo browser all'authorization server indicando chi è, quale accesso chiede (\emph{scope}) e dove tornare (\emph{redirect URI}).
-    \item L'authorization server autentica l'utente e decide se concedere l'accesso; le credenziali non arrivano mai al client~\cite[§1.3.1, p. 8]{rfc6749}.
-    \item Se l'accesso è concesso, il browser torna al client con un \emph{authorization code}, temporaneo e monouso~\cite[§4.1.2, pp. 26--27]{rfc6749}.
-    \item Il client presenta il codice direttamente all'authorization server, autenticandosi, e riceve i token.
+    \item L'utente avvia l'accesso sull'RP, che reindirizza il browser all'IdP indicando \texttt{client\_id}, \emph{scope} e \emph{redirect URI}.
+    \item L'IdP autentica l'utente (senza mai esporre le credenziali all'RP) e restituisce al browser un \emph{authorization code} temporaneo e monouso.
+    \item L'RP scambia direttamente il codice con l'IdP e riceve, oltre all'access token, un \textbf{ID Token}~\cite[§3.1.3.3]{openid-connect-core} (oppure li riceve insieme nella risposta di autorizzazione nel flusso \emph{ibrido}~\cite[§3.3]{openid-connect-core}).
 \end{enumerate}
-In questo flusso il token non passa dal browser, dove potrebbe essere esposto~\cite[§1.3.1, p. 8]{rfc6749}.
+L'ID Token è un JSON Web Token (JWT) firmato digitalmente~\cite{rfc7519} che contiene \emph{claim} obbligatori: \texttt{iss} (emittente), \texttt{sub} (identificativo univoco dell'utente presso l'emittente), \texttt{aud} (destinatario, ovvero il \texttt{client\_id} dell'RP), \texttt{exp} (scadenza) e \texttt{iat} (istante di emissione), oltre a un eventuale \texttt{nonce} contro attacchi di replay~\cite[§2]{openid-connect-core}. Prima di accettarlo, l'RP deve verificare la firma crittografica tramite le chiavi pubbliche dell'IdP, la corrispondenza di \texttt{iss} e \texttt{aud}, e la validità temporale (\texttt{exp})~\cite[§3.1.3.7]{openid-connect-core}.
 
-\subsubsection*{OpenID Connect: aggiungere l'identità}
-OIDC è un livello di identità costruito sopra OAuth 2.0: permette al client di verificare l'identità dell'utente in base all'autenticazione svolta dall'authorization server~\cite[§1]{openid-connect-core}. In OIDC l'authorization server prende il nome di \emph{OpenID Provider} (OP) e svolge il ruolo di IdP, mentre il client è la \emph{Relying Party} (RP) e corrisponde allo SP descritto in 2.2~\cite[§1.2]{openid-connect-core}.
-
-OIDC non introduce un flusso nuovo ma usa lo stesso Authorization Code di OAuth [4, §1; §3.1] e vi aggiunge lo scope \texttt{openid}~\cite[§3.1.2.1]{openid-connect-core} e, oltre all'access token, l'OP restituisce un \emph{ID Token}~\cite[§3.1.3.3]{openid-connect-core}: un JWT (JSON Web Token) firmato digitalmente~\cite[§2]{openid-connect-core} che contiene i \emph{claim} sull'autenticazione appena avvenuta. I claim obbligatori sono \texttt{iss} (l'emittente), \texttt{sub} (l'identificativo dell'utente presso quell'emittente), \texttt{aud} (i destinatari, tra cui il \texttt{client\_id}), \texttt{exp} (la scadenza) e \texttt{iat} (l'emissione)~\cite[§2]{openid-connect-core}. Il \texttt{nonce}, un valore scelto dal client contro il replay, è facoltativo nel flusso Authorization Code~\cite[§2; §3.1.2.1]{openid-connect-core}.
-
-L'RP non deve fidarsi a priori dell'ID Token: controlla che l'emittente coincida con \texttt{iss}, che il proprio \texttt{client\_id} compaia in \texttt{aud}, che la firma sia valida con le chiavi dell'emittente e che l'ora attuale preceda \texttt{exp}~\cite[§3.1.3.7]{openid-connect-core}. Sono questi controlli la parte di responsabilità dello SP anticipata in 2.2.
-
-OIDC prevede anche il flusso \emph{ibrido}, in cui con \texttt{response\_type=code id\_token} il code e un ID Token arrivano insieme nella risposta di autorizzazione~\cite[§3.3.2.5]{openid-connect-core}; in questo caso il \texttt{nonce} è obbligatorio~\cite[§3.3.2.1]{openid-connect-core}.
-
-\subsection{Vantaggi e criticità dei sistemi di login federato}
-Il login federato semplifica l'accesso, ma sposta fiducia e rischio su pochi punti. Tra i vantaggi:
+\subsection{Vantaggi e criticità}
+La federazione offre importanti benefici ma concentra fiducia e rischi~\cite{nist800-63-3-impl,nist800-63c-4-privacy,nist800-63c-4-fed}:
 \begin{itemize}
-    \item \textbf{Meno credenziali per l'utente.} NIST osserva che la federazione permette di avere meno account da usare su molti siti, senza riutilizzare lo stesso autenticatore su siti diversi~\cite[C.1]{nist800-63-3-impl}.
-    \item \textbf{Le applicazioni non gestiscono le password.} È l'obiettivo originale di OAuth: il client non conserva le credenziali dell'utente~\cite[§1, pp. 4--5; §1.3.1, p. 8]{rfc6749}.
-    \item \textbf{Meno dati verso le applicazioni.} La federazione consente di ridurre i dati esposti all'RP~\cite[§7.3]{nist800-63c-4-privacy}, come nel caso dell'email nascosta di Apple~\cite{jain-apple-2020}.
-\end{itemize}
-
-Le criticità:
-\begin{itemize}
-    \item \textbf{Tracciamento.} Se un utente usa lo stesso IdP per più siti, l'IdP può costruire un profilo delle sue attività che senza federazione non esisterebbe~\cite[§7.1]{nist800-63c-4-privacy}.
-    \item \textbf{Complessità.} Una transazione federata richiede protocolli multi-parte con caratteristiche di sicurezza e privacy sottili~\cite[§3]{nist800-63c-4-fed}.
-    \item \textbf{Come l'applicazione identifica l'utente.} Anche con un token valido, l'RP deve decidere quale informazione usare per riconoscere l'account. NIST indica che l'identificativo federato è la combinazione dell'identificativo dell'utente (\texttt{sub}) e dell'emittente (\texttt{iss}), e che l'RP non dovrebbe mai usare il primo senza considerare chi l'ha emesso~\cite[§3.4]{nist800-63c-4-fed}. Raccomanda inoltre che non contenga dati personali in chiaro come l'email, e lo richiede da FAL2 in su~\cite[§3.4]{nist800-63c-4-fed}. Nel caso Apple del 2020, ad essere a rischio erano proprio le applicazioni prive di misure di sicurezza aggiuntive che si affidavano a questo dato senza ulteriori verifiche~\cite{jain-apple-2020}.
-    \item \textbf{Concentrazione.} Un errore nell'IdP si propaga a tutte le applicazioni che si affidano a lui (vedi 5.3, e 4.3 per la disponibilità).
+    \item \textbf{Vantaggi:} riduce il numero di password che l'utente deve gestire~\cite[C.1]{nist800-63-3-impl}, solleva gli RP dalla custodia delle credenziali~\cite[§1]{rfc6749} e consente di limitare i dati personali esposti ai servizi terzi~\cite[§7.3]{nist800-63c-4-privacy} (come l'opzione di email nascosta di Apple~\cite{jain-apple-2020}).
+    \item \textbf{Criticità:} l'IdP può tracciare i servizi usati dall'utente~\cite[§7.1]{nist800-63c-4-privacy}; i protocolli multi-parte introducono complessità implementative~\cite[§3]{nist800-63c-4-fed}; l'RP deve identificare l'account tramite la coppia stabile \texttt{sub}--\texttt{iss} evitando di basarsi su attributi mutabili o in chiaro come l'email~\cite[§3.4]{nist800-63c-4-fed}; infine, l'IdP diventa un \emph{single point of failure} in cui un difetto si propaga a tutte le applicazioni collegate.
 \end{itemize}

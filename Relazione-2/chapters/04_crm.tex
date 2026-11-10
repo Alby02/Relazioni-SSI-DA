@@ -1,67 +1,18 @@
-\section{Analisi dei rischi secondo l'approccio del Cyber Risk Management}
+\section{Analisi dei rischi secondo il Cyber Risk Management}
 \label{sec:episodi}
 
-L'analisi dei rischi applicata al nostro caso di studio considera la possibilità
-che un soggetto non autorizzato acceda ad un account legittimo. Ne consegue che
-l'analisi non riguarda solo Apple come provider, ma anche tutte le applicazioni
-che si fidano di questo tipo di autenticazione.
+Applicando il framework del \emph{Cyber Risk Management}~\cite{nist800-30} al caso in esame, il perimetro di rischio non si limita al singolo Identity Provider (Apple), ma si estende a tutte le Relying Party (RP) che delegano ad esso l'autenticazione.
 
-\subsection{Identificazione delle minacce e delle vulnerabilità}
-La minaccia principale è l'\textbf{impersonificazione dell'utente}, il quale porta
-anche la \textbf{compromissione completa dell'account}. Ciò è dato sfruttando
-come debolezza l'\textbf{eccessiva fiducia in chi fornisce l'autenticazione}: nel
-momento in cui il provider ha un difetto nella verifica delle informazioni di
-autenticazione e l'applicazione delega tutti i controlli, i dati personali su un
-determinato utente sono messi a disposizione degli attaccanti~\cite{goodin2020}.
+\subsection{Minacce, vulnerabilità e probabilità di sfruttamento}
+La minaccia principale è l'\textbf{impersonificazione dell'utente} finalizzata alla compromissione completa dell'account (\emph{account takeover}). Gli \emph{asset} esposti comprendono i dati personali degli utenti, le sessioni di accesso, le funzionalità applicative (es. pagamenti o archiviazione cloud) e la reputazione stessa del provider e dei servizi integrati~\cite{goodin2020}.
 
-Oltre ai dati sensibili e agli account, nella lista degli \emph{asset} esposti
-diventano anche le sessioni di accesso e tutte le funzionalità disponibili con
-quell'account.
+La vulnerabilità risiede nella combinazione tra il difetto di validazione lato IdP e la \textbf{fiducia eccessiva} riposta dalle applicazioni nei claim ricevuti. Nelle applicazioni prive di controlli secondari, la \textbf{probabilità di sfruttamento} potenziale risultava \textbf{elevata}: l'attacco era eseguibile da remoto, non richiedeva la conoscenza della password della vittima né alcuna interazione da parte sua (aggirando di fatto anche l'MFA sull'account Apple della vittima). Il rischio effettivo variava comunque in base all'implementazione specifica dell'RP, riducendosi nei servizi che identificavano gli utenti tramite il claim \texttt{sub} o richiedevano conferme aggiuntive per associare l'account.
 
-\subsection{Valutazione del rischio e delle probabilità di sfruttamento}
-Il rischio di sfruttamento di questa debolezza nelle applicazioni che non
-effettuano altri tipi di controlli può essere considerato \textbf{elevato}, il
-che è dovuto alle scarse verifiche. L'attacco può essere portato a termine senza
-conoscere le password della vittima.
-
-Nonostante ciò, la probabilità effettiva varia da applicazione ad applicazione,
-in base alla possibilità di raggiungere il componente interessato. Infatti, la
-richiesta di un'ulteriore conferma dell'identità di un utente per l'accesso a una
-determinata risorsa abbassa la probabilità di sfruttamento. Non essendo
-disponibili numeri affidabili su effettivi tentativi e compromissioni riuscite,
-non si è in grado di dare una stima affidabile. Si ricorda inoltre che la
-correzione da parte di Apple della vulnerabilità \textbf{NON} incide sulle
-implementazioni errate delle applicazioni.
-
-\subsection{Analisi degli impatti su riservatezza, integrità e disponibilità}
-Gli impatti sono analizzati sulle dimensioni di \textbf{riservatezza, integrità e
-disponibilità}~\cite{nist800-30}:
-
+\subsection{Impatti su riservatezza, integrità e disponibilità}
+Un eventuale sfruttamento della vulnerabilità avrebbe compromesso tutte e tre le dimensioni della sicurezza (triade CIA)~\cite{nist800-30}:
 \begin{itemize}
-    \item \textbf{Riservatezza:} un attaccante potrebbe accedere a informazioni
-    personali, documenti o comunicazioni riservate;
-    \item \textbf{Integrità:} un attaccante potrebbe modificare dati, impostazioni o
-    contenuti dell'account, agendo come se fosse il legittimo proprietario;
-    \item \textbf{Disponibilità:} un attaccante potrebbe ostacolare l'accesso
-    dell'utente al servizio, ad esempio alterando le impostazioni dell'account o
-    mantenendone il controllo.
+    \item \textbf{Riservatezza:} accesso non autorizzato a profili personali, documenti privati, cronologie e comunicazioni riservate custodite nelle applicazioni terze;
+    \item \textbf{Integrità:} modifica non autorizzata di dati, impostazioni di sicurezza o contenuti dell'account agendo con i privilegi del legittimo proprietario;
+    \item \textbf{Disponibilità:} esclusione dell'utente legittimo dal proprio account (ad esempio tramite alterazione delle credenziali collegate o cancellazione del profilo).
 \end{itemize}
-
-Si specifica che, ovviamente, attacchi su account con dati limitati possono avere
-effetti limitati, mentre con account collegati ad altri servizi possono produrre
-danni più significativi.
-
-\subsection{Analisi delle conseguenze per utenti, applicazioni e provider}
-Le conseguenze si distribuiscono tra i diversi soggetti coinvolti. Gli utenti
-possono subire violazioni della privacy, frodi e perdita del controllo dei propri
-account. Le applicazioni possono affrontare fughe di dati, costi di ripristino,
-contestazioni e danni reputazionali. Il provider, infine, rischia di perdere la
-fiducia degli utenti e degli sviluppatori, anche quando l'incidente dipende in
-parte da una verifica implementata in modo scorretto dai servizi terzi.
-
-Di conseguenza la gestione del rischio richiede pertanto responsabilità condivise:
-il provider deve proteggere il processo di emissione delle credenziali, mentre le
-applicazioni devono verificare firma, emittente, destinatario, scadenza e
-identificativo dell'utente secondo le indicazioni ufficiali~\cite{apple-verifying-user}.
-Occorre inoltre prevedere monitoraggio, revoca delle sessioni compromesse e
-procedure efficaci di recupero degli account.
+La gestione di questo rischio impone quindi una responsabilità condivisa: l'IdP deve garantire l'integrità del processo di emissione dei token, mentre le applicazioni devono validare rigorosamente i claim secondo le specifiche ufficiali~\cite{apple-verifying-user}, affiancando meccanismi di monitoraggio e revoca delle sessioni.
