@@ -61,24 +61,11 @@ servizio~\cite{nist800-63c,owasp-auth-cheatsheet}.
 Il login federato descritto nelle sezioni precedenti si realizza spesso con due protocolli standard: OAuth 2.0 e OpenID Connect (OIDC).
 
 \subsubsection*{OAuth 2.0: delegare l'accesso}
-OAuth 2.0 nasce per un problema di autorizzazione, non di autenticazione: permettere a un'applicazione di terze parti di accedere a una risorsa dell'utente senza che l'utente le consegni la propria password~\cite[§1, p. 5]{rfc6749}\cite[§1]{openid-connect-core}. Prima di OAuth, per dare questo accesso il resource owner condivideva le proprie credenziali con la terza parte, e ne derivavano diversi problemi~\cite[§1, pp. 4--5]{rfc6749}:
-\begin{itemize}
-    \item la terza parte deve conservare la password, di solito in chiaro;
-    \item i server devono continuare a supportare l'autenticazione con password, nonostante i suoi limiti;
-    \item l'accesso concesso è troppo ampio e senza limiti di durata;
-    \item l'utente non può revocare l'accesso a una singola terza parte senza revocarlo a tutte (cambiando la password);
-    \item la compromissione di una sola applicazione espone la password dell'utente e tutti i dati che essa protegge.
-\end{itemize}
+OAuth 2.0 nasce per un problema di autorizzazione, non di autenticazione: permettere a un'applicazione di terze parti di accedere a una risorsa dell'utente senza che l'utente le consegni la propria password~\cite[§1, p. 5]{rfc6749}\cite[§1]{openid-connect-core}. Prima di OAuth, per dare questo accesso il resource owner condivideva le proprie credenziali con la terza parte, e ne derivavano diversi problemi, tra cui il fatto che la terza parte deve conservare la password, di solito in chiaro~\cite[§1, pp. 4--5]{rfc6749}.
 
-OAuth risolve il problema separando il ruolo del client da quello del resource owner: al posto delle credenziali dell'utente, il client ottiene un access token, una stringa che indica uno scope, una durata e altri attributi di accesso~\cite[§1, p. 5]{rfc6749}. Lo standard definisce quattro ruoli~\cite[§1.1, p. 6]{rfc6749}:
-\begin{itemize}
-    \item \textbf{resource owner:} chi può concedere l'accesso a una risorsa protetta (l'utente);
-    \item \textbf{client:} l'applicazione che richiede le risorse per conto del resource owner e con la sua autorizzazione;
-    \item \textbf{authorization server:} il server che emette gli access token dopo aver autenticato il resource owner e ottenuto l'autorizzazione;
-    \item \textbf{resource server:} il server che ospita le risorse protette.
-\end{itemize}
+OAuth risolve il problema separando il ruolo del client da quello del resource owner: al posto delle credenziali dell'utente, il client ottiene un access token, una stringa che indica uno scope, una durata e altri attributi di accesso~\cite[§1, p. 5]{rfc6749}. Lo standard definisce quattro ruoli:il \emph{resource owner} (l'utente), il \emph{client} (l'applicazione), l'\emph{authorization server} (emette i token dopo aver autenticato l'utente) e il \emph{resource server} (ospita le risorse protette)~\cite[§1.1, p. 6]{rfc6749}.
 
-Il flusso più usato e che descriviamo è l'Authorization Code, che si svolge in questi passaggi~\cite{rfc6749}:
+Il flusso che descriviamo è l'Authorization Code, che si svolge in questi passaggi~\cite{rfc6749}:
 \begin{enumerate}
     \item L'utente sceglie ``Accedi con\dots'' sull'applicazione (il client), che reindirizza il suo browser all'authorization server indicando chi è (il proprio client identifier), quale accesso chiede (scope) e dove tornare (redirect URI).
     \item L'authorization server autentica l'utente e stabilisce se concede l'accesso. Le credenziali dell'utente restano all'authorization server e non arrivano mai al client~\cite[§1.3.1, p. 8]{rfc6749}.
