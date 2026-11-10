@@ -44,25 +44,3 @@ dispositivi mobili, e permette alle applicazioni di appoggiarsi a grandi
 provider che dispongono già di infrastrutture di sicurezza avanzate e di MFA.
 Allo stesso tempo, però, concentrare l'autenticazione su pochi fornitori sposta
 la superficie d'attacco sulla corretta comunicazione tra i sistemi coinvolti.
-
-\subsection{Obiettivi e struttura della relazione}
-L'obiettivo di questa relazione è analizzare il funzionamento dei sistemi di
-login federato e comprenderne i potenziali punti deboli, approfondendo come
-caso di studio reale la vulnerabilità scoperta nel 2020 nel servizio
-\emph{Sign in with Apple} dal ricercatore di sicurezza Bhavuk
-Jain~\cite{jain2020}.
-
-Nel Capitolo~\ref{sec:contesto} vengono presentate le basi tecniche del login
-federato, distinguendo tra autenticazione federata e \emph{Single Sign-On},
-definendo i ruoli di \emph{Identity Provider} e \emph{Service Provider} e
-illustrando i protocolli OAuth~2.0, OpenID Connect e l'architettura di
-\emph{Sign in with Apple}. Il Capitolo~\ref{sec:analisi-tecnica} entra nel
-dettaglio tecnico della vulnerabilità del 2020, mostrando come un difetto nella
-validazione dei parametri permettesse di generare token validi per account
-altrui. Nei Capitoli~\ref{sec:episodi} e~\ref{sec:conseguenze} il caso viene
-analizzato secondo l'approccio del \emph{Cyber Risk Management}, valutando
-minacce, probabilità di sfruttamento, impatti su riservatezza, integrità e
-disponibilità (CIA) e conseguenze per utenti, applicazioni e provider. Infine,
-il Capitolo~\ref{sec:mitigazioni} discute le correzioni introdotte da Apple e
-le buone pratiche di verifica dei token, mentre il
-Capitolo~\ref{sec:conclusioni} raccoglie le conclusioni sul tema.
