@@ -58,45 +58,28 @@ del token prima di concedere l'accesso al proprio
 servizio~\cite{nist800-63c,owasp-auth-cheatsheet}.
 
 \subsection{Funzionamento dei protocolli OAuth 2.0 e OpenID Connect}
-Il login federato descritto nelle sezioni precedenti si realizza spesso con due protocolli standard: OAuth 2.0 e OpenID Connect (OIDC).
+Il login federato si realizza spesso con due protocolli standard: OAuth 2.0 e OpenID Connect (OIDC)~\cite[§1]{rfc9700}.
 
 \subsubsection*{OAuth 2.0: delegare l'accesso}
-OAuth 2.0 nasce per un problema di autorizzazione, non di autenticazione: permettere a un'applicazione di terze parti di accedere a una risorsa dell'utente senza che l'utente le consegni la propria password~\cite[§1, p. 5]{rfc6749}\cite[§1]{openid-connect-core}. Prima di OAuth, per dare questo accesso il resource owner condivideva le proprie credenziali con la terza parte, e ne derivavano diversi problemi, tra cui il fatto che la terza parte deve conservare la password, di solito in chiaro~\cite[§1, pp. 4--5]{rfc6749}.
+OAuth 2.0 permette a un'applicazione di terze parti di accedere a una risorsa dell'utente senza che questi le consegni la propria password~\cite[§1, p. 5]{rfc6749}. Al posto delle credenziali, il client ottiene un \emph{access token}, una stringa che indica scope, durata e altri attributi dell'accesso~\cite[§1, p. 5]{rfc6749}. Non è però un protocollo di autenticazione: non fornisce metodi standard per comunicare l'identità dell'utente~\cite[§1]{openid-connect-core}. Lo standard prevede quattro ruoli: il \emph{resource owner} (l'utente), il \emph{client} (l'applicazione), l'\emph{authorization server} (emette i token dopo aver autenticato l'utente) e il \emph{resource server} (ospita le risorse protette)~\cite[§1.1, p. 6]{rfc6749}.
 
-OAuth risolve il problema separando il ruolo del client da quello del resource owner: al posto delle credenziali dell'utente, il client ottiene un access token, una stringa che indica uno scope, una durata e altri attributi di accesso~\cite[§1, p. 5]{rfc6749}. Lo standard definisce quattro ruoli:il \emph{resource owner} (l'utente), il \emph{client} (l'applicazione), l'\emph{authorization server} (emette i token dopo aver autenticato l'utente) e il \emph{resource server} (ospita le risorse protette)~\cite[§1.1, p. 6]{rfc6749}.
-
-Il flusso che descriviamo è l'Authorization Code, che si svolge in questi passaggi~\cite{rfc6749}:
+Il flusso \emph{Authorization Code} si svolge in quattro passaggi~\cite[§4.1, p. 25]{rfc6749}:
 \begin{enumerate}
-    \item L'utente sceglie ``Accedi con\dots'' sull'applicazione (il client), che reindirizza il suo browser all'authorization server indicando chi è (il proprio client identifier), quale accesso chiede (scope) e dove tornare (redirect URI).
-    \item L'authorization server autentica l'utente e stabilisce se concede l'accesso. Le credenziali dell'utente restano all'authorization server e non arrivano mai al client~\cite[§1.3.1, p. 8]{rfc6749}.
-    \item Se l'accesso è concesso, l'authorization server rimanda il browser al client con un authorization code, un codice temporaneo che può essere usato una sola volta~\cite[§4.1.2, pp. 26--27]{rfc6749}.
-    \item Il client presenta il codice direttamente al token endpoint dell'authorization server, autenticandosi e indicando lo stesso redirect URI. L'authorization server autentica il client, valida il code, controlla il redirect URI e risponde con l'access token ed eventualmente un refresh token.
+    \item L'utente sceglie ``Accedi con\dots'' sull'applicazione (il client), che manda il suo browser all'authorization server indicando chi è, quale accesso chiede (\emph{scope}) e dove tornare (\emph{redirect URI}).
+    \item L'authorization server autentica l'utente e decide se concedere l'accesso; le credenziali non arrivano mai al client~\cite[§1.3.1, p. 8]{rfc6749}.
+    \item Se l'accesso è concesso, il browser torna al client con un \emph{authorization code}, temporaneo e monouso~\cite[§4.1.2, pp. 26--27]{rfc6749}.
+    \item Il client presenta il codice direttamente all'authorization server, autenticandosi, e riceve i token.
 \end{enumerate}
-
-Il vantaggio è che il token arriva al client senza passare dal browser, dove potrebbe essere esposto~\cite[§1.3.1, p. 8]{rfc6749}: il browser vede solo il codice.
-
-La RFC 6749 è del 2012. La Best Current Practice RFC 9700 (2025), che la aggiorna~\cite[Abstract]{rfc9700}, preferisce questo flusso al flusso implicit~\cite[§2.1.2]{rfc9700}. Nell'implicit il token è consegnato nell'URL di reindirizzamento~\cite[§4.2, p. 31]{rfc6749} e può essere esposto all'utente o ad altre applicazioni con accesso al browser~\cite[§1.3.2, p. 9]{rfc6749}. Con l'Authorization Code, invece, i token non compaiono negli URL e il server può rilevare i tentativi di replay~\cite[§2.1.2]{rfc9700} e la RFC 9700 richiede inoltre PKCE, che impedisce di riutilizzare un codice intercettato~\cite[§2.1.1; §4.5.3.1]{rfc9700}.
+In questo flusso il token non passa dal browser, dove potrebbe essere esposto~\cite[§1.3.1, p. 8]{rfc6749}.
 
 \subsubsection*{OpenID Connect: aggiungere l'identità}
-OAuth 2.0 è un protocollo di autorizzazione: stabilisce che cosa un'applicazione può fare su una risorsa, ma non fornisce metodi standard per comunicare l'identità dell'utente~\cite[§1]{openid-connect-core}. La parte di autenticazione costruita sull'infrastruttura di OAuth 2.0 è OpenID Connect, che permette al client di verificare l'identità dell'utente in base all'autenticazione svolta dall'authorization server~\cite[§1]{openid-connect-core}.
+OIDC è un livello di identità costruito sopra OAuth 2.0: permette al client di verificare l'identità dell'utente in base all'autenticazione svolta dall'authorization server~\cite[§1]{openid-connect-core}. In OIDC l'authorization server prende il nome di \emph{OpenID Provider} (OP) e svolge il ruolo di IdP, mentre il client è la \emph{Relying Party} (RP) e corrisponde allo SP descritto in 2.2~\cite[§1.2]{openid-connect-core}.
 
-OIDC realizza quindi l'autenticazione federata descritta in 2.1 e 2.2: l'identità e l'autenticazione dell'utente restano all'Identity Provider, e l'applicazione si affida al risultato. I ruoli sono gli stessi di OAuth, con nomi diversi: l'authorization server prende il nome di OpenID Provider (OP) e svolge il ruolo di IdP, mentre il client prende il nome di Relying Party (RP) e corrisponde allo SP descritto in 2.2. L'OP è un authorization server capace di autenticare l'utente e di fornire all'RP claim sull'autenticazione e sull'utente~\cite[§1.2]{openid-connect-core}.
+La richiesta include lo scope \texttt{openid}~\cite[§3.1.2.1]{openid-connect-core} e, oltre all'access token, l'OP restituisce un \emph{ID Token}~\cite[§3.1.3.3]{openid-connect-core}: un JWT (JSON Web Token) firmato digitalmente~\cite[§2]{openid-connect-core} che contiene i \emph{claim} sull'autenticazione appena avvenuta. I claim obbligatori sono \texttt{iss} (l'emittente), \texttt{sub} (l'identificativo dell'utente presso quell'emittente), \texttt{aud} (i destinatari, tra cui il \texttt{client\_id}), \texttt{exp} (la scadenza) e \texttt{iat} (l'emissione)~\cite[§2]{openid-connect-core}. Il \texttt{nonce}, un valore scelto dal client contro il replay, è facoltativo nel flusso Authorization Code~\cite[§2; §3.1.2.1]{openid-connect-core}.
 
-Il flusso è lo stesso di OAuth, ma la richiesta include lo scope openid~\cite[§3.1.2.1]{openid-connect-core}, con cui il client chiede di usare OIDC~\cite[§1]{openid-connect-core}, e oltre all'access token l'OP restituisce un ID Token~\cite[§3.1.3.3]{openid-connect-core}. L'ID Token è un JWT (JSON Web Token) firmato digitalmente~\cite[§2]{openid-connect-core} che contiene dei claim sull'utente e sull'autenticazione appena avvenuta~\cite[§1.2]{openid-connect-core}. I claim obbligatori sono~\cite[§2]{openid-connect-core}:
-\begin{itemize}
-    \item \textbf{iss:} l'emittente, un URL \url{https};
-    \item \textbf{sub:} l'identificativo dell'utente, unico presso quell'emittente;
-    \item \textbf{aud:} i destinatari del token, che devono includere il \texttt{client\_id} dell'applicazione;
-    \item \textbf{exp:} la scadenza;
-    \item \textbf{iat:} il momento di emissione.
-\end{itemize}
+L'RP non deve fidarsi a priori dell'ID Token: controlla che l'emittente coincida con \texttt{iss}, che il proprio \texttt{client\_id} compaia in \texttt{aud}, che la firma sia valida con le chiavi dell'emittente e che l'ora attuale preceda \texttt{exp}~\cite[§3.1.3.7]{openid-connect-core}. Sono questi controlli la parte di responsabilità dello SP anticipata in 2.2.
 
-Tra i claim facoltativi c'è il nonce, un valore che associa la sessione del client all'ID Token ed è un controllo contro il replay: se il client lo ha inviato, il server deve restituirlo e il client deve verificarlo~\cite[§2]{openid-connect-core}. Nel flusso Authorization Code, però, l'invio nella richiesta è opzionale~\cite[§3.1.2.1]{openid-connect-core}.
-
-Ricevuto l'ID Token, l'RP non deve fidarsene a priori: controlla che l'emittente coincida con \texttt{iss}, che il proprio \texttt{client\_id} compaia in \texttt{aud}, che la firma sia valida con le chiavi fornite dall'emittente, che l'ora attuale preceda \texttt{exp} e che il nonce, se inviato, coincida con quello della richiesta~\cite[§3.1.3.7]{openid-connect-core}. Questi controlli sono la parte di responsabilità dello SP anticipata in 2.2.
-
-OIDC prevede anche una variante, il flusso ibrido, in cui con \texttt{response\_type=code id\_token} arrivano insieme il code e un ID Token~\cite[§3.3.2.5]{openid-connect-core}, e in questo caso il nonce è obbligatorio~\cite[§3.3.2.1]{openid-connect-core}.
-
+OIDC prevede anche il flusso \emph{ibrido}, in cui con \texttt{response\_type=code id\_token} il code e un ID Token arrivano insieme nella risposta di autorizzazione~\cite[§3.3.2.5]{openid-connect-core}; in questo caso il \texttt{nonce} è obbligatorio~\cite[§3.3.2.1]{openid-connect-core}.
 \subsection{Sign in with Apple: architettura e modalità di autenticazione}
 Sign in with Apple permette di accedere ad app e siti di terze parti con il proprio Apple Account. Secondo il ricercatore che nel 2020 ne scoprì la vulnerabilità, funziona in modo simile a OAuth 2.0~\cite{jain-apple-2020}: Apple è l'IdP (in OIDC, l'OP) e l'app o il sito è lo SP (l'RP).
 
